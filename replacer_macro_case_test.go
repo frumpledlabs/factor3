@@ -10,6 +10,8 @@ func Test_MacroCaseReplacer(t *testing.T) {
 	r := newReplacerMacroCase()
 
 	testCases := map[string]string{
+		// Documentation tests:
+		"":           "",
 		"A":          "A",
 		"lowercase":  "LOWERCASE",
 		"UPPERCASE":  "UPPERCASE",
@@ -17,9 +19,11 @@ func Test_MacroCaseReplacer(t *testing.T) {
 		"snake_case": "SNAKE_CASE",
 		"oOpS_CaSe":  "O_OP_S_CA_SE",
 
-		"aBC":      "A_BC",
-		"aBcD":     "A_BC_D",
-		"aa_bC_De": "AA_B_C_DE",
+		// Practical tests:
+		"APIKey":        "API_KEY",
+		"anotherAPIKey": "ANOTHER_API_KEY",
+		"someJSON":      "SOME_JSON",
+		"JSONData":      "JSON_DATA",
 	}
 
 	for input, expected := range testCases {

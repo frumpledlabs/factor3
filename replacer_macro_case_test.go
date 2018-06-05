@@ -21,9 +21,24 @@ func Test_MacroCaseReplacer(t *testing.T) {
 
 		// Practical tests:
 		"APIKey":        "API_KEY",
+		"AnotherAPIKey": "ANOTHER_API_KEY",
 		"anotherAPIKey": "ANOTHER_API_KEY",
 		"someJSON":      "SOME_JSON",
-		"JSONData":      "JSON_DATA",
+		"moarJSONData":  "MOAR_JSON_DATA",
+		"JSONPi":        "JSON_PI",
+	}
+
+	for input, expected := range testCases {
+		actual := r.Replace(input)
+		assert.Equal(t, expected, actual, input)
+	}
+}
+
+func Test_SpecialCase(t *testing.T) {
+	r := newReplacerMacroCase()
+
+	testCases := map[string]string{
+		"anotherAPIKey": "ANOTHER_API_KEY",
 	}
 
 	for input, expected := range testCases {

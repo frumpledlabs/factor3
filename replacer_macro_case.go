@@ -5,32 +5,15 @@ import (
 	"unicode"
 )
 
+// This will attempt to convert straight-forward and conventional casing;
+// it is not intended to replace complex or non-intuitive casing
 type replacerMacroCase struct{}
 
 func newReplacerMacroCase() replacerMacroCase {
 	return replacerMacroCase{}
 }
 
-func (r replacerMacroCase) OLD_Replace(input string) string {
-	var replacement string
-
-	fieldFunc := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && string(c) != "_"
-	}
-
-	//words := strings.Fields(input)
-	words := strings.FieldsFunc(input, fieldFunc)
-	for _, word := range words {
-		replacement += strings.ToUpper(word) + "_"
-	}
-
-	replacement = strings.Trim(replacement, "_")
-
-	return replacement
-}
-
 func (r replacerMacroCase) Replace(input string) string {
-
 	if len(input) == 0 {
 		return ""
 	}
@@ -46,16 +29,15 @@ func (r replacerMacroCase) Replace(input string) string {
 		}
 
 		if matchUppercase && !unicode.IsUpper(r) {
-			output = append(output, '_')
 			output = append(output, unicode.ToUpper(r))
-			matchUppercase = false
+			matchUppercase = !matchUppercase
 			continue
 		}
 
 		if !matchUppercase && unicode.IsUpper(r) {
 			output = append(output, '_')
 			output = append(output, unicode.ToUpper(r))
-			matchUppercase = true
+			matchUppercase = !matchUppercase
 			continue
 		}
 

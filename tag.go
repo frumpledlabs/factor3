@@ -7,8 +7,8 @@ import (
 )
 
 type tag struct {
-	key   string
-	value string
+	key    string
+	values []string
 }
 
 func newTag(input string) (tag, error) {
@@ -24,14 +24,14 @@ func newTag(input string) (tag, error) {
 		return t, err
 	}
 
-	value, err := parseValue(pair[1])
+	values, err := parseValues(pair[1])
 	if err != nil {
 		return t, err
 	}
 
 	t = tag{
-		key:   key,
-		value: value,
+		key:    key,
+		values: values,
 	}
 
 	return t, nil
@@ -47,21 +47,30 @@ func parseKey(input string) (string, error) {
 	return key, nil
 }
 
-func parseValue(input string) (string, error) {
+func parseValues(input string) ([]string, error) {
+	values := []string{}
+
 	input = strings.TrimSpace(input)
-	matched, _ := regexp.MatchString("\".*\"", input)
+	matched, _ := regexp.MatchString(`"\S+"`, input)
 	if !matched {
-		return "", errors.New("Invalid tag value: " + input)
+		return values, errors.New("Invalid tag values: " + input)
 	}
 	input = strings.Trim(input, "\"")
 
-	return input, nil
+	for _, v := range strings.Split(input, ",") {
+		if empty, _ := regexp.MatchString(v, `\s*`); empty {
+			return values, errors.New("Empty value found")
+		}
+		values = append(values, v)
+	}
+
+	return values, nil
 }
 
 func (t tag) Key() string {
 	return t.key
 }
 
-func (t tag) Value() string {
-	return t.value
+func (t tag) Values() []string {
+	return t.values
 }

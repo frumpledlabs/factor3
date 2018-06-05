@@ -19,14 +19,21 @@ func Test_ParseSingleValue(t *testing.T) {
 	testTag, err := newTag(`key:"value"`)
 
 	require.Nil(t, err)
-	assert.Equal(t, "value", testTag.Value())
+	assert.Equal(t, []string{"value"}, testTag.Values())
 }
 
 func Test_ParseMultipleValues(t *testing.T) {
 	testTag, err := newTag(`key:"value"`)
 
 	require.Nil(t, err)
-	assert.Equal(t, "value", testTag.Value())
+	assert.Equal(t, []string{"value"}, testTag.Values())
+}
+
+func Test_ParseMultiValueTag_FindsAllValues(t *testing.T) {
+	testTag, err := newTag(`key:"value,test"`)
+
+	require.Nil(t, err)
+	assert.Equal(t, 2, len(testTag.Values()))
 }
 
 func Test_ParseInvalidTagsResultsInError(t *testing.T) {
@@ -36,7 +43,7 @@ func Test_ParseInvalidTagsResultsInError(t *testing.T) {
 		`key:`,
 		`:`,
 		` :"value"`,
-		//		`key:"value,"`,
+		`key:"value,"`,
 	}
 
 	for _, tagInput := range invalidTags {

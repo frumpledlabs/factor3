@@ -7,8 +7,8 @@ import (
 )
 
 type Test struct {
-	Defaults string `envDefault:"default_value"`
-	Nested   struct {
+	Root   string `envDefault:"default_value"`
+	Nested struct {
 		Value string
 	}
 	Deep struct {
@@ -22,11 +22,11 @@ func main() {
 
 	var conf Test
 
-	printFields(&conf)
-	printFields(&conf.Nested)
-	printFields(&conf.Deep.Nested)
+	//printFields(&conf)
+	//printFields(&conf.Nested)
+	//printFields(&conf.Deep.Nested)
 
-	//Load("", conf)
+	Load("", &conf)
 	fmt.Println("Conf:")
 	fmt.Println(conf)
 }
@@ -64,10 +64,6 @@ func printFields(input interface{}) {
 }
 
 func Load(prefix string, input interface{}) {
-	parseValue(prefix, input)
-}
-
-func parseValue(prefix string, input interface{}) {
 	inputValue := reflect.ValueOf(input)
 	inputType := reflect.TypeOf(input)
 
@@ -82,12 +78,19 @@ func parseValue(prefix string, input interface{}) {
 
 		switch fieldValue.Kind() {
 		case reflect.Struct:
-			parseValue(prefix+"_"+field.Name, fieldValue.Interface())
+			Load(prefix+"_"+field.Name, fieldValue.Interface())
 		case reflect.String:
 			name := strings.Trim(fmt.Sprintf(prefix+"_"+field.Name), "_")
 			fmt.Println("Field Index:", name)
-			setField(field)
-			setValue(inputValue, field)
+			//setField(field)
+			//setValue(inputValue, field)
+			if fieldValue.IsValid() {
+				fmt.Println("\tVALID")
+				fmt.Println("\t", fieldValue.CanSet())
+				if fieldValue.CanSet() {
+					fieldValue.SetString("PASS")
+				}
+			}
 		default:
 			// TODO: log warn: skipping unexpected value of type: fieldValue.Kind()
 			fmt.Println("UNKNOWN Kind:", fieldValue.Kind())

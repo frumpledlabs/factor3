@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -9,15 +10,17 @@ import (
 
 func Test_SingleRootLevelVariableIsLoaded(t *testing.T) {
 	os.Setenv("TEST", "PASS")
-	defer os.Unsetenv("TEST")
+	defer os.Unsetenv("PASS")
+
+	fmt.Println("Actual value:", os.Getenv("TEST"))
 
 	conf := struct {
-		test string
+		Test string
 	}{}
 
-	Load(conf)
-
-	assert.Equal(t, "PASS", conf.test)
+	err := Load("", &conf)
+	assert.Nil(t, err)
+	assert.Equal(t, "PASS", conf.Test)
 }
 
 func Test_NestedVariableIsLoaded(t *testing.T) {
@@ -25,14 +28,14 @@ func Test_NestedVariableIsLoaded(t *testing.T) {
 	defer os.Unsetenv("ANOTHER_TEST")
 
 	conf := struct {
-		another struct {
-			test string
+		Another struct {
+			Test string
 		}
 	}{}
 
-	Load(conf)
-
-	assert.Equal(t, "PASS", conf.another.test)
+	err := Load("", &conf)
+	assert.NotNil(t, err)
+	assert.Equal(t, "PASS", conf.Another.Test)
 }
 
 func Test_UnsetRequiredVariableErrors(t *testing.T) {
@@ -40,7 +43,7 @@ func Test_UnsetRequiredVariableErrors(t *testing.T) {
 		test string `env:"required"`
 	}{}
 
-	err := Load(conf)
+	err := Load("", &conf)
 	assert.NotNil(t, err)
 }
 
@@ -52,7 +55,7 @@ func Test_SetRequiredVariableLoadsWithoutError(t *testing.T) {
 		requiredVar string `env:"required"`
 	}{}
 
-	err := Load(conf)
+	err := Load("", &conf)
 	assert.Nil(t, err)
 }
 
@@ -64,7 +67,7 @@ func Test_DefaultValueOverriden(t *testing.T) {
 		defaultKeyExists string `envDefault:"MISSING"`
 	}{}
 
-	Load(conf)
+	Load("", &conf)
 
 	assert.Equal(t, "OVERRIDDEN", conf.defaultKeyExists)
 }
@@ -77,7 +80,7 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 		defaultKeyIsEmptyString string `envDefault:"EMPTY"`
 	}{}
 
-	Load(conf)
+	Load("", &conf)
 
 	assert.Equal(t, "", conf.defaultKeyIsEmptyString)
 }
@@ -87,7 +90,7 @@ func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 		defaultKeySet string `envDefault:"DEFAULT"`
 	}{}
 
-	Load(conf)
+	Load("", &conf)
 
 	assert.Equal(t, "DEFAULT", conf.defaultKeySet)
 }
@@ -97,7 +100,7 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 		requiredWithDefault string `env:"required" envDefault:"DEFAULT"`
 	}{}
 
-	err := Load(conf)
+	err := Load("", &conf)
 
 	assert.Nil(t, err)
 }

@@ -11,6 +11,7 @@ func Test_MacroCaseReplacer(t *testing.T) {
 		// Documentation tests:
 		"":           "",
 		"A":          "A",
+		"oOpS_C":     "O_OP_S_C",
 		"lowercase":  "LOWERCASE",
 		"UPPERCASE":  "UPPERCASE",
 		"camelCase":  "CAMEL_CASE",

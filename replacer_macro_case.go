@@ -7,13 +7,7 @@ import (
 
 // This will attempt to convert straight-forward and conventional casing;
 // it is not intended to replace complex or non-intuitive casing
-type replacerMacroCase struct{}
-
-func newReplacerMacroCase() replacerMacroCase {
-	return replacerMacroCase{}
-}
-
-func (r replacerMacroCase) Replace(input string) string {
+func Replace(input string) string {
 	if len(input) == 0 {
 		return ""
 	}

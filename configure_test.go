@@ -1,18 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_SingleRootLevelVariableIsLoaded(t *testing.T) {
 	os.Setenv("TEST", "PASS")
 	defer os.Unsetenv("PASS")
-
-	fmt.Println("Actual value:", os.Getenv("TEST"))
 
 	conf := struct {
 		Test string
@@ -34,13 +32,13 @@ func Test_NestedVariableIsLoaded(t *testing.T) {
 	}{}
 
 	err := Load("", &conf)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Another.Test)
 }
 
 func Test_UnsetRequiredVariableErrors(t *testing.T) {
 	conf := struct {
-		test string `env:"required"`
+		UnsetRequiredVar string `envRequired:"true"`
 	}{}
 
 	err := Load("", &conf)
@@ -52,24 +50,25 @@ func Test_SetRequiredVariableLoadsWithoutError(t *testing.T) {
 	defer os.Unsetenv("REQUIRED_VAR")
 
 	conf := struct {
-		requiredVar string `env:"required"`
+		RequiredVar string `envRequired:"true"`
 	}{}
 
 	err := Load("", &conf)
 	assert.Nil(t, err)
 }
 
-func Test_DefaultValueOverriden(t *testing.T) {
+func Test_DefaultValueOverridden(t *testing.T) {
 	os.Setenv("DEFAULT_KEY_EXISTS", "OVERRIDDEN")
-	os.Unsetenv("DEFAULT_KEY_EXISTS")
+	defer os.Unsetenv("DEFAULT_KEY_EXISTS")
 
 	conf := struct {
-		defaultKeyExists string `envDefault:"MISSING"`
+		DefaultKeyExists string `envDefault:"DEFAULT"`
 	}{}
 
-	Load("", &conf)
+	err := Load("", &conf)
 
-	assert.Equal(t, "OVERRIDDEN", conf.defaultKeyExists)
+	assert.Nil(t, err)
+	assert.Equal(t, "OVERRIDDEN", conf.DefaultKeyExists)
 }
 
 func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
@@ -87,17 +86,17 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 
 func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 	conf := struct {
-		defaultKeySet string `envDefault:"DEFAULT"`
+		DefaultKeySet string `envDefault:"DEFAULT"`
 	}{}
 
 	Load("", &conf)
 
-	assert.Equal(t, "DEFAULT", conf.defaultKeySet)
+	assert.Equal(t, "DEFAULT", conf.DefaultKeySet)
 }
 
 func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	conf := struct {
-		requiredWithDefault string `env:"required" envDefault:"DEFAULT"`
+		RequiredWithDefault string `env:"required" envDefault:"DEFAULT"`
 	}{}
 
 	err := Load("", &conf)
@@ -105,6 +104,17 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_PrintKeys(t *testing.T) {
-	assert.Fail(t, "Not yet implemented")
+func Test_Keys(t *testing.T) {
+	conf := struct {
+		A      string
+		Nested struct {
+			C string
+			D string
+		}
+	}{}
+
+	keys, err := Keys(conf)
+
+	require.Nil(t, err)
+	assert.Len(t, keys, 3)
 }

@@ -16,7 +16,7 @@ func Test_SingleRootLevelVariableIsLoaded(t *testing.T) {
 		Test string
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Test)
 }
@@ -31,7 +31,7 @@ func Test_NestedVariableIsLoaded(t *testing.T) {
 		}
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Another.Test)
 }
@@ -41,7 +41,7 @@ func Test_UnsetRequiredVariableErrors(t *testing.T) {
 		UnsetRequiredVar string `envRequired:"true"`
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 	assert.NotNil(t, err)
 }
 
@@ -53,7 +53,7 @@ func Test_SetRequiredVariableLoadsWithoutError(t *testing.T) {
 		RequiredVar string `envRequired:"true"`
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 	assert.Nil(t, err)
 }
 
@@ -65,7 +65,7 @@ func Test_DefaultValueOverridden(t *testing.T) {
 		DefaultKeyExists string `envDefault:"DEFAULT"`
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 
 	assert.Nil(t, err)
 	assert.Equal(t, "OVERRIDDEN", conf.DefaultKeyExists)
@@ -79,7 +79,7 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 		defaultKeyIsEmptyString string `envDefault:"EMPTY"`
 	}{}
 
-	Load("", &conf)
+	Load(&conf)
 
 	assert.Equal(t, "", conf.defaultKeyIsEmptyString)
 }
@@ -89,7 +89,7 @@ func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 		DefaultKeySet string `envDefault:"DEFAULT"`
 	}{}
 
-	Load("", &conf)
+	Load(&conf)
 
 	assert.Equal(t, "DEFAULT", conf.DefaultKeySet)
 }
@@ -99,7 +99,7 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 		RequiredWithDefault string `env:"required" envDefault:"DEFAULT"`
 	}{}
 
-	err := Load("", &conf)
+	err := Load(&conf)
 
 	assert.Nil(t, err)
 }

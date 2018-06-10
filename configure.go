@@ -10,7 +10,7 @@ import (
 
 // Loads configuration into the given variable, assuming all values are
 // optional, unless otherwise tagged.
-func Load(prefix string, input interface{}) error {
+func Load(input interface{}) error {
 	if reflect.TypeOf(input).Kind() != reflect.Ptr {
 		return errors.New("Expected a struct pointer")
 	}
@@ -23,7 +23,7 @@ func Load(prefix string, input interface{}) error {
 	}
 
 	for i := 0; i < inputType.NumField(); i++ {
-		err := setField(prefix, inputValue.Field(i), inputType.Field(i))
+		err := setField("", inputValue.Field(i), inputType.Field(i))
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func setField(prefix string, field reflect.Value, fieldType reflect.StructField)
 		value := reference.Elem()
 
 		value.Set(field)
-		Load(key, reference.Interface())
+		Load(reference.Interface())
 		field.Set(value)
 	}
 

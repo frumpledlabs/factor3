@@ -22,7 +22,7 @@ func Replace(input string) string {
 	for i := 0; i < len(input); i++ {
 		r := rune(input[i])
 
-		if !unicode.IsLetter(r) {
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
 			output = append(output, '_')
 			continue
 		}

@@ -1,4 +1,4 @@
-package main
+package factor3
 
 import (
 	"os"

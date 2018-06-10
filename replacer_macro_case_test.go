@@ -1,4 +1,4 @@
-package main
+package factor3
 
 import (
 	"testing"
@@ -7,6 +7,8 @@ import (
 )
 
 func Test_MacroCaseReplacer(t *testing.T) {
+	macroCaser := NewMacroCaseReplacer()
+
 	testCases := map[string]string{
 		// Documentation tests:
 		"":           "",
@@ -30,18 +32,7 @@ func Test_MacroCaseReplacer(t *testing.T) {
 	}
 
 	for input, expected := range testCases {
-		actual := Replace(input)
-		assert.Equal(t, expected, actual, input)
-	}
-}
-
-func Test_SpecialCase(t *testing.T) {
-	testCases := map[string]string{
-		"anotherAPIKey": "ANOTHER_API_KEY",
-	}
-
-	for input, expected := range testCases {
-		actual := Replace(input)
+		actual := macroCaser.Replace(input)
 		assert.Equal(t, expected, actual, input)
 	}
 }

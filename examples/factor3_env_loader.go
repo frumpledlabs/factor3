@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"gitlab.com/frumpled/factor3"
 )
 
 func main() {
@@ -29,6 +31,6 @@ func main() {
 	}{}
 
 	fmt.Println(conf)
-	Load(&conf)
+	factor3.Load(&conf)
 	fmt.Println(conf)
 }

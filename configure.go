@@ -1,4 +1,4 @@
-package main
+package factor3
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 )
+
+var macroCaser = NewMacroCaseReplacer()
 
 // Loads environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
@@ -38,7 +40,7 @@ func setField(prefix string, field reflect.Value, fieldType reflect.StructField)
 	}
 
 	key := fmt.Sprintf("%s_%s", prefix, fieldType.Name)
-	key = Replace(key)
+	key = macroCaser.Replace(key)
 
 	value := os.Getenv(key)
 	isSet := len(value) > 0

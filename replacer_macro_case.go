@@ -1,85 +1,38 @@
-package main
+package factor3
 
 import (
-	//"fmt"
+	"regexp"
 	"strings"
-	"unicode"
 )
+
+type macroCaseReplacer struct {
+	patternReplacements map[*regexp.Regexp]string
+}
+
+func NewMacroCaseReplacer() macroCaseReplacer {
+	patternReplacements := map[*regexp.Regexp]string{
+		regexp.MustCompile("([A-Z]+)([A-Z][a-z]+)"): "${1}_${2}",
+		regexp.MustCompile("([a-z]+)([A-Z]+)"):      "${1}_${2}",
+		regexp.MustCompile("[\\._]+"):               "_",
+	}
+
+	return macroCaseReplacer{
+		patternReplacements: patternReplacements,
+	}
+}
 
 // This will attempt to convert straight-forward and conventional casing;
 // it is not intended to replace complex or non-intuitive casing
-func Replace(input string) string {
-	if len(input) == 0 {
-		return ""
+func (m macroCaseReplacer) Replace(input string) string {
+	result := input
+
+	for pattern, replacement := range m.patternReplacements {
+		result = pattern.ReplaceAllString(result, replacement)
 	}
 
-	var output []rune
+	result = strings.TrimSpace(result)
+	result = strings.ToUpper(result)
+	result = strings.Trim(result, "_")
 
-	matchUppercase := unicode.IsUpper(rune(input[0]))
-	var nextIsUppercase bool
-	var nextNextIsUppercase bool
-
-	for i := 0; i < len(input); i++ {
-		r := rune(input[i])
-
-		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
-			output = append(output, '_')
-			continue
-		}
-
-		// Determine casing:
-		currentIsUppercase := unicode.IsUpper(r)
-
-		if i < len(input)-1 {
-			nextIsUppercase = unicode.IsUpper(rune(input[i+1]))
-		}
-
-		if i < len(input)-2 {
-			nextNextIsUppercase = unicode.IsUpper(rune(input[i+2]))
-		}
-
-		// Account for Mixes uppercase:
-		if i < len(input)-2 && !unicode.IsLetter(rune(input[i+1])) {
-			output = append(output, unicode.ToUpper(r))
-			continue
-		}
-
-		if !currentIsUppercase && nextIsUppercase {
-			output = append(output, unicode.ToUpper(r))
-			output = append(output, '_')
-			continue
-		}
-
-		if currentIsUppercase && nextIsUppercase && !nextNextIsUppercase {
-			if i < len(input)-2 {
-				if !unicode.IsLetter(rune(input[i+2])) {
-					output = append(output, unicode.ToUpper(r))
-					continue
-				}
-			}
-
-			output = append(output, unicode.ToUpper(r))
-			output = append(output, '_')
-			continue
-		}
-
-		// Account for upper to lower case change:
-		if matchUppercase && !currentIsUppercase {
-			output = append(output, unicode.ToUpper(r))
-			matchUppercase = !matchUppercase
-			continue
-		}
-
-		// Account for lower to upper case change:
-		if !matchUppercase && currentIsUppercase {
-			output = append(output, '_')
-			output = append(output, unicode.ToUpper(r))
-			matchUppercase = !matchUppercase
-			continue
-		}
-
-		output = append(output, unicode.ToUpper(r))
-	}
-
-	return strings.Replace(strings.Trim(string(output), "_"), "__", "_", -1)
+	return result
 }

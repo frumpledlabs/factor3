@@ -19,6 +19,8 @@ func Test_MacroCaseReplacer(t *testing.T) {
 
 		// Practical tests:
 		"APIKey":        "API_KEY",
+		"ApiKey":        "API_KEY",
+		"API_Key":       "API_KEY",
 		"AnotherAPIKey": "ANOTHER_API_KEY",
 		"anotherAPIKey": "ANOTHER_API_KEY",
 		"someJSON":      "SOME_JSON",

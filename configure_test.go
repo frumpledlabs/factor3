@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_SingleRootLevelVariableIsLoaded(t *testing.T) {
@@ -102,19 +101,4 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	err := Load(&conf)
 
 	assert.Nil(t, err)
-}
-
-func Test_Keys(t *testing.T) {
-	conf := struct {
-		A      string
-		Nested struct {
-			C string
-			D string
-		}
-	}{}
-
-	keys, err := Keys(conf)
-
-	require.Nil(t, err)
-	assert.Len(t, keys, 3)
 }

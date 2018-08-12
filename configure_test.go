@@ -86,11 +86,13 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 	conf := struct {
 		DefaultKeySet string `envDefault:"DEFAULT"`
+		DefaultBool   bool   `envDefault:"true"`
 	}{}
 
 	ReadEnvironmentInto(&conf)
 
 	assert.Equal(t, "DEFAULT", conf.DefaultKeySet)
+	assert.Equal(t, true, conf.DefaultBool)
 }
 
 func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {

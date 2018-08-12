@@ -6,8 +6,6 @@ import (
 	"reflect"
 )
 
-var macroCaser = NewMacroCaseReplacer()
-
 // Loads environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
 func Load(input interface{}) error {
@@ -33,6 +31,8 @@ func Load(input interface{}) error {
 }
 
 func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error {
+	var macroCaser = NewMacroCaseReplacer()
+
 	if !field.CanSet() {
 		return errors.New("Field cannot be set")
 	}

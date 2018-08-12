@@ -1,5 +1,8 @@
 package factor3
 
+// Check here for moar examples on reflect usage:
+//	https://github.com/a8m/reflect-examples#get-and-set-struct-fields
+
 import (
 	"errors"
 	"os"

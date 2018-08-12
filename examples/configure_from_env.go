@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -30,12 +31,14 @@ func main() {
 		}
 		DefaultedValues struct {
 			DefaultFalse  bool   `envDefault:"false"`
-			DefaultTrue   bool   `envDefualt:"true"`
+			DefaultTrue   bool   `envDefault:"true"`
 			DefaultString string `envDefault:"default string value"`
 		}
 	}{}
 
-	fmt.Println(conf)
+	//fmt.Println(conf)
 	factor3.ReadEnvironmentInto(&conf)
-	fmt.Println(conf)
+	//	fmt.Sprintf("%+v\n", conf)
+	jsonString, _ := json.Marshal(&conf)
+	fmt.Println(string(jsonString))
 }

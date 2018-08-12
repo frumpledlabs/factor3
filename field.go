@@ -7,10 +7,10 @@ import (
 	"strconv"
 )
 
-func isZeroValue(field reflect.Value) bool {
+func isZeroValue(v reflect.Value) bool {
 	return reflect.DeepEqual(
-		reflect.Zero(field.Type()).Interface(),
-		field.Interface(),
+		reflect.Zero(v.Type()).Interface(),
+		v.Interface(),
 	)
 }
 
@@ -37,77 +37,77 @@ func getEnvValueForField(field reflect.StructField, key string) (string, error) 
 	return value, nil
 }
 
-func setField(rawValue string, field reflect.Value) error {
-	switch field.Kind() {
+func setField(rawValue string, v reflect.Value) error {
+	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(value).Convert(field.Type()))
+		v.Set(reflect.ValueOf(value).Convert(v.Type()))
 	case reflect.Float32:
 		value, err := strconv.ParseFloat(rawValue, 32)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(float32(value)).Convert(field.Type()))
+		v.Set(reflect.ValueOf(float32(value)).Convert(v.Type()))
 	case reflect.Float64:
 		value, err := strconv.ParseFloat(rawValue, 64)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(value).Convert(field.Type()))
+		v.Set(reflect.ValueOf(value).Convert(v.Type()))
 	case reflect.Int:
 		value, err := strconv.ParseInt(rawValue, 10, 64)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(int(value)).Convert(field.Type()))
+		v.Set(reflect.ValueOf(int(value)).Convert(v.Type()))
 	case reflect.Int8:
 		value, err := strconv.ParseInt(rawValue, 10, 8)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(int8(value)).Convert(field.Type()))
+		v.Set(reflect.ValueOf(int8(value)).Convert(v.Type()))
 	case reflect.Int16:
 		value, err := strconv.ParseInt(rawValue, 10, 16)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(int16(value)).Convert(field.Type()))
+		v.Set(reflect.ValueOf(int16(value)).Convert(v.Type()))
 	case reflect.Int32:
 		value, err := strconv.ParseInt(rawValue, 10, 32)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(int32(value)).Convert(field.Type()))
+		v.Set(reflect.ValueOf(int32(value)).Convert(v.Type()))
 	case reflect.Int64:
 		value, err := strconv.ParseInt(rawValue, 10, 64)
 		if err != nil {
 			return err
 		}
-		field.Set(reflect.ValueOf(value).Convert(field.Type()))
+		v.Set(reflect.ValueOf(value).Convert(v.Type()))
 	case reflect.String:
-		field.Set(reflect.ValueOf(rawValue).Convert(field.Type()))
+		v.Set(reflect.ValueOf(rawValue).Convert(v.Type()))
 	case reflect.Struct:
-		field.Set(reflect.New(field.Type()).Elem())
+		v.Set(reflect.New(v.Type()).Elem())
 	case reflect.Ptr:
-		field.Set(reflect.New(field.Type().Elem()))
+		v.Set(reflect.New(v.Type().Elem()))
 	}
 
 	return nil
 }
 
-func test(key string, field reflect.Value, fieldType reflect.StructField) {
-	switch field.Kind() {
+func test(key string, v reflect.Value, vType reflect.StructField) {
+	switch v.Kind() {
 	case reflect.Ptr:
-		setFieldFromEnv(key, field.Elem(), fieldType)
+		setFieldFromEnv(key, v.Elem(), vType)
 	case reflect.Struct:
-		reference := reflect.New(field.Type())
+		reference := reflect.New(v.Type())
 		value := reference.Elem()
 
-		value.Set(field)
+		value.Set(v)
 		Load(reference.Interface())
-		field.Set(value)
+		v.Set(value)
 	}
 }

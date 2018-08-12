@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	os.Setenv("STRING", "String")
+	os.Setenv("STRING", "String value")
 	os.Setenv("BOOL", "true")
 	os.Setenv("INT", "42")
 	os.Setenv("INT64", "64")
 	os.Setenv("NESTED_STRING", "nestedString")
-	os.Setenv("NESTED_BOOL", "false")
+	os.Setenv("NESTED_BOOL", "true")
 	os.Setenv("NESTED_INT", "42")
 	os.Setenv("NESTED_INT64", "64")
 

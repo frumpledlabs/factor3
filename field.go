@@ -110,7 +110,7 @@ func test(key string, v reflect.Value, vType reflect.StructField) {
 		value := reference.Elem()
 
 		value.Set(v)
-		Load(reference.Interface())
+		ReadEnvironmentInto(reference.Interface())
 		v.Set(value)
 	}
 }

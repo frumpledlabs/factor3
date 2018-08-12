@@ -28,9 +28,14 @@ func main() {
 			Int    int
 			Int64  int64
 		}
+		DefaultedValues struct {
+			DefaultFalse  bool   `envDefault:"false"`
+			DefaultTrue   bool   `envDefualt:"true"`
+			DefaultString string `envDefault:"default string value"`
+		}
 	}{}
 
 	fmt.Println(conf)
-	factor3.Load(&conf)
+	factor3.ReadEnvironmentInto(&conf)
 	fmt.Println(conf)
 }

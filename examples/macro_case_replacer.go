@@ -15,7 +15,7 @@ func main() {
 		"UpperCamelCase",
 		"Dot.Case",
 	} {
-		fmt.Print(s, "\t->\t")
+		fmt.Print(s, "  ->  ")
 		fmt.Println(r.Replace(s))
 	}
 }

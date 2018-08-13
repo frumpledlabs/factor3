@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"gitlab.com/frumpled/factor3"
+	"github.com/frumpled/factor3"
 )
 
 func main() {

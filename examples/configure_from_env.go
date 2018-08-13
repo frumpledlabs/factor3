@@ -17,6 +17,7 @@ func main() {
 	os.Setenv("NESTED_BOOL", "true")
 	os.Setenv("NESTED_INT", "42")
 	os.Setenv("NESTED_INT64", "64")
+	os.Setenv("DEFAULTED_VALUES_OVERIDDEN_STRING", "WAS_OVERRIDEN")
 
 	conf := struct {
 		String string
@@ -30,14 +31,15 @@ func main() {
 			Int64  int64
 		}
 		DefaultedValues struct {
-			DefaultFalse  bool   `envDefault:"false"`
-			DefaultTrue   bool   `envDefault:"true"`
-			DefaultString string `envDefault:"default string value"`
+			DefaultFalse    bool   `envDefault:"false"`
+			DefaultTrue     bool   `envDefault:"true"`
+			DefaultString   string `envDefault:"default string value"`
+			OveriddenString string `envDefault:"NOT_OVERRIDEN"`
 		}
 	}{}
 
 	//fmt.Println(conf)
-	factor3.ReadEnvironmentInto(&conf)
+	factor3.ReadEnvironmentInto("", &conf)
 	//	fmt.Sprintf("%+v\n", conf)
 	jsonString, _ := json.Marshal(&conf)
 	fmt.Println(string(jsonString))

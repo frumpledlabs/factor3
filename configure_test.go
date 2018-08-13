@@ -15,7 +15,7 @@ func Test_SingleRootLevelVariableIsReadEnvironmentIntoed(t *testing.T) {
 		Test string
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Test)
 }
@@ -30,7 +30,7 @@ func Test_NestedVariableIsReadEnvironmentIntoed(t *testing.T) {
 		}
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Another.Test)
 }
@@ -40,11 +40,11 @@ func Test_UnsetRequiredVariableErrors(t *testing.T) {
 		UnsetRequiredVar string `envRequired:"true"`
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 	assert.NotNil(t, err)
 }
 
-func Test_SetRequiredVariableReadEnvironmentIntosWithoutError(t *testing.T) {
+func Test_SetRequiredVariableReadEnvironmentIntoWithoutError(t *testing.T) {
 	os.Setenv("REQUIRED_VAR", "PASS")
 	defer os.Unsetenv("REQUIRED_VAR")
 
@@ -52,7 +52,7 @@ func Test_SetRequiredVariableReadEnvironmentIntosWithoutError(t *testing.T) {
 		RequiredVar string `envRequired:"true"`
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 	assert.Nil(t, err)
 }
 
@@ -61,13 +61,15 @@ func Test_DefaultValueOverridden(t *testing.T) {
 	defer os.Unsetenv("DEFAULT_KEY_EXISTS")
 
 	conf := struct {
-		DefaultKeyExists string `envDefault:"DEFAULT"`
+		Default struct {
+			KeyExists string `envDefault:"DEFAULT"`
+		}
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "OVERRIDDEN", conf.DefaultKeyExists)
+	assert.Equal(t, "OVERRIDDEN", conf.Default.KeyExists)
 }
 
 func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
@@ -78,7 +80,7 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 		defaultKeyIsEmptyString string `envDefault:"EMPTY"`
 	}{}
 
-	ReadEnvironmentInto(&conf)
+	ReadEnvironmentInto("", &conf)
 
 	assert.Equal(t, "", conf.defaultKeyIsEmptyString)
 }
@@ -89,7 +91,7 @@ func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 		DefaultBool   bool   `envDefault:"true"`
 	}{}
 
-	ReadEnvironmentInto(&conf)
+	ReadEnvironmentInto("", &conf)
 
 	assert.Equal(t, "DEFAULT", conf.DefaultKeySet)
 	assert.Equal(t, true, conf.DefaultBool)
@@ -100,7 +102,7 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 		RequiredWithDefault string `env:"required" envDefault:"DEFAULT"`
 	}{}
 
-	err := ReadEnvironmentInto(&conf)
+	err := ReadEnvironmentInto("", &conf)
 
 	assert.Nil(t, err)
 }

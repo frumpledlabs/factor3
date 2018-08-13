@@ -9,6 +9,11 @@ import (
 )
 
 func main() {
+	macroCaseReplacerExample()
+	configureFromEnvExample()
+}
+
+func configureFromEnvExample() {
 	os.Setenv("STRING", "String value")
 	os.Setenv("BOOL", "true")
 	os.Setenv("INT", "42")
@@ -43,4 +48,22 @@ func main() {
 	//	fmt.Sprintf("%+v\n", conf)
 	jsonString, _ := json.Marshal(&conf)
 	fmt.Println(string(jsonString))
+
+	fmt.Println()
+}
+
+func macroCaseReplacerExample() {
+	r := factor3.NewMacroCaseReplacer()
+
+	for _, s := range []string{
+		"apiKeys",
+		"dataJSON",
+		"UpperCamelCase",
+		"Dot.Case",
+	} {
+		fmt.Print(s, "  ->  ")
+		fmt.Println(r.Replace(s))
+	}
+
+	fmt.Println()
 }

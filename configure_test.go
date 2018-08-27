@@ -1,6 +1,7 @@
 package factor3
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -105,4 +106,42 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	err := ReadEnvironmentInto("", &conf)
 
 	assert.Nil(t, err)
+}
+
+func ExampleReadEnvironmentInto() {
+	os.Setenv("STRING", "String value")
+	os.Setenv("BOOL", "true")
+	os.Setenv("INT", "42")
+	os.Setenv("INT64", "64")
+	os.Setenv("NESTED_STRING", "nestedString")
+	os.Setenv("NESTED_BOOL", "true")
+	os.Setenv("NESTED_INT", "42")
+	os.Setenv("NESTED_INT64", "64")
+	os.Setenv("DEFAULTED_VALUES_OVERIDDEN_STRING", "WAS_OVERRIDEN")
+
+	conf := struct {
+		String string
+		Bool   bool
+		Int    int
+		Int64  int64
+		Nested struct {
+			String string
+			Bool   bool
+			Int    int
+			Int64  int64
+		}
+		DefaultedValues struct {
+			DefaultFalse    bool   `envDefault:"false"`
+			DefaultTrue     bool   `envDefault:"true"`
+			DefaultString   string `envDefault:"default string value"`
+			OveriddenString string `envDefault:"NOT_OVERRIDEN"`
+		}
+	}{}
+
+	ReadEnvironmentInto("", &conf)
+	fmt.Println(conf)
+
+	// Import "encoding/json" to pretty print:
+	// jsonString, _ := json.Marshal(&conf)
+	// fmt.Println(string(jsonString))
 }

@@ -39,14 +39,15 @@ func main() {
 ```
 
 ## Notes
-This project is still in development (notice version 0).
-#### What will remain stable:
-[The problems this package will solve](https://12factor.net/config) will remain the same
+- All variable paths are calculated with given prefix and coverted to [MACRO_CASE](https://en.wikipedia.org/w/index.php?title=Naming_convention_(programming)#Delimiter-separated_words).
+- This project is still in development (notice version 0).
+- What will remain stable:
+  - [The problems this package will solve](https://12factor.net/config) will remain the same
 
-#### What may note remain stable:
-The interface for using / configuring this package.
+- What may note remain stable:
+  - The interface for using / configuring this package.
 
 #### Potential future changes:
 - Inject custom logger
-- Godocs
+- More complete Godocs
 - Clean up the codez.  I found dealing with reflection in Golang to be quite a nightmare; currently, the codebase "reflects" this D:  ( <-- dadjoke :D )

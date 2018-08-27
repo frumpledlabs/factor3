@@ -6,13 +6,13 @@
 
 ## Overview
 #### TLDR
-Opinionated environment config loading for Golang.  Intended to strictly follow Factor 3 of the [Twelve Factor App](https://12factor.net/) methodology.
+This is an opinionated Golang package intended to load an environment into a config variable.  The intent is to strictly adhere to the principles outlined in Factor 3 of the [Twelve Factor App](https://12factor.net/) methodology.
 
 #### Description
 This is intended to ease the use of marshalling values from the environment into a struct for an app's config, similar to how the json/encoding package is doing thangs.  An intentionally small/restricted set of configuration flags are provided.  This package's functions should not need to be run frequently in an application's lifecycle, so ease-of-use has been considered higher in priorities than performance (within reason) here.
 
 #### Example
-```go
+```golang
 package main
 
 import (
@@ -33,21 +33,18 @@ func main() {
 
 	factor3.ReadEnvironmentInto("APP_EXAMPLE", &conf)
 
+	// Pretty print the conf variable:
 	jsonString, _ := json.Marshal(&conf)
 	fmt.Println(string(jsonString))
 }
 ```
 
 ## Notes
-- All variable paths are calculated with given prefix and coverted to [MACRO_CASE](https://en.wikipedia.org/w/index.php?title=Naming_convention_(programming)#Delimiter-separated_words).
-- This project is still in development (notice version 0).
-- What will remain stable:
-  - [The problems this package will solve](https://12factor.net/config) will remain the same
-
-- What may note remain stable:
-  - The interface for using / configuring this package.
+- All variable paths for the struct passed in are calculated with the given prefix and coverted to [MACRO_CASE](https://en.wikipedia.org/w/index.php?title=Naming_convention_(programming)#Delimiter-separated_words).
+- Please not, this project is still in development (notice version 0).
+	- [What this package will do / the problems it will solve](https://12factor.net/config) will remain the same
+	- The interface for using / configuring this package may not be stable at this time.
 
 #### Potential future changes:
 - Inject custom logger
-- More complete Godocs
 - Clean up the codez.  I found dealing with reflection in Golang to be quite a nightmare; currently, the codebase "reflects" this D:  ( <-- dadjoke :D )

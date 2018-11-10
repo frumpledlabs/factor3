@@ -45,6 +45,17 @@ func main() {
 	- [What this package will do / the problems it will solve](https://12factor.net/config) will remain the same
 	- The interface for using / configuring this package may not be stable at this time.
 
+
+This captures implementatino details and is strongly tied to the built in "reflect" package.
+Testing this provides little value in comparison to the amount of effort required to do so and
+relies on an already well tested/vetted package.  Further consideration is needed before any testing
+will be pursued.
+
 #### Potential future changes:
 - Inject custom logger
 - Clean up the codez.  I found dealing with reflection in Golang to be quite a nightmare; currently, the codebase "reflects" this D:  ( <-- dadjoke :D )
+
+## Notes on test coverage
+
+#### ./field.go
+

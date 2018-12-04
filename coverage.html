@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/frumpled/factor3/configure.go (89.7%)</option>
+				
+				<option value="file1">github.com/frumpled/factor3/environment.go (0.0%)</option>
+				
+				<option value="file2">github.com/frumpled/factor3/field.go (35.1%)</option>
+				
+				<option value="file3">github.com/frumpled/factor3/macro_case_replacer.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package factor3
+
+import (
+        "errors"
+        "fmt"
+        "reflect"
+)
+
+// ReadEnvironmentInto environment into given configuration variable, using specific
+// tags to determine requirements, values, and behavior.
+func ReadEnvironmentInto(prefix string, input interface{}) error <span class="cov8" title="1">{
+        if reflect.TypeOf(input).Kind() != reflect.Ptr </span><span class="cov0" title="0">{
+                return errors.New("Expected a struct pointer")
+        }</span>
+
+        <span class="cov8" title="1">inputValue := reflect.ValueOf(input).Elem()
+        inputType := inputValue.Type()
+
+        if inputType.Kind() != reflect.Struct </span><span class="cov0" title="0">{
+                return errors.New("Expected a struct pointer")
+        }</span>
+
+        <span class="cov8" title="1">for i := 0; i &lt; inputType.NumField(); i++ </span><span class="cov8" title="1">{
+                err := setFieldFromEnv(prefix, inputValue.Field(i), inputType.Field(i))
+                if err != nil </span><span class="cov8" title="1">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error <span class="cov8" title="1">{
+        var macroCaser = NewMacroCaseReplacer()
+
+        if !field.CanSet() </span><span class="cov8" title="1">{
+                return errors.New("Field cannot be set")
+        }</span>
+
+        <span class="cov8" title="1">key := fmt.Sprintf("%s_%s", prefix, fieldType.Name)
+        key = macroCaser.Replace(key)
+
+        envValue, err := getEnvValueForField(fieldType, key)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if isZeroValue(field) </span><span class="cov8" title="1">{
+                setField(envValue, field)
+        }</span>
+
+        <span class="cov8" title="1">switch field.Kind() </span>{
+        case reflect.Ptr:<span class="cov0" title="0">
+                setFieldFromEnv(key, field.Elem(), fieldType)</span>
+        case reflect.Struct:<span class="cov8" title="1">
+                reference := reflect.New(field.Type())
+                value := reference.Elem()
+
+                value.Set(field)
+                ReadEnvironmentInto(key, reference.Interface())
+                field.Set(value)</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package factor3
+
+type environment struct {
+        variablePrefix string
+}
+
+// Initialize config for the environemnt to load
+func ReadEnvironment() environment <span class="cov0" title="0">{
+        return environment{}
+}</span>
+
+// Set a prefix to use when fetchnig environment variables
+func (e environment) WithVariablePrefix(environmentVariablePrefix string) environment <span class="cov0" title="0">{
+        e.variablePrefix = environmentVariablePrefix
+
+        return e
+}</span>
+
+// Read environment into given struct
+//  Traverses the passed in config object and populates it's fields w/ environment variable data
+func (e environment) ReadInto(configStruct interface{}) error <span class="cov0" title="0">{
+        return ReadEnvironmentInto(
+                e.variablePrefix,
+                configStruct,
+        )
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package factor3
+
+// Check here for moar examples on reflect usage:
+//        https://github.com/a8m/reflect-examples#get-and-set-struct-fields
+
+import (
+        "errors"
+        "os"
+        "reflect"
+        "strconv"
+)
+
+func isZeroValue(v reflect.Value) bool <span class="cov8" title="1">{
+        return reflect.DeepEqual(
+                reflect.Zero(v.Type()).Interface(),
+                v.Interface(),
+        )
+}</span>
+
+func getEnvValueForField(field reflect.StructField, key string) (string, error) <span class="cov8" title="1">{
+        value := os.Getenv(key)
+        isSet := len(value) &gt; 0
+
+        if !isSet </span><span class="cov8" title="1">{
+                value = field.Tag.Get("envDefault")
+                isSet = len(value) &gt; 0
+        }</span>
+
+        <span class="cov8" title="1">isRequiredValue := field.Tag.Get("envRequired")
+        isRequired, err := strconv.ParseBool(isRequiredValue)
+        if err != nil </span><span class="cov8" title="1">{
+                // log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
+                isRequired = false
+        }</span>
+
+        <span class="cov8" title="1">if isRequired &amp;&amp; !isSet </span><span class="cov8" title="1">{
+                return value, errors.New("No value set for required key: " + key)
+        }</span>
+
+        <span class="cov8" title="1">return value, nil</span>
+}
+
+func setField(rawValue string, v reflect.Value) error <span class="cov8" title="1">{
+        switch v.Kind() </span>{
+        case reflect.Bool:<span class="cov8" title="1">
+                value, err := strconv.ParseBool(rawValue)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov8" title="1">v.Set(reflect.ValueOf(value).Convert(v.Type()))</span>
+        case reflect.Float32:<span class="cov0" title="0">
+                value, err := strconv.ParseFloat(rawValue, 32)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(float32(value)).Convert(v.Type()))</span>
+        case reflect.Float64:<span class="cov0" title="0">
+                value, err := strconv.ParseFloat(rawValue, 64)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(value).Convert(v.Type()))</span>
+        case reflect.Int:<span class="cov0" title="0">
+                value, err := strconv.ParseInt(rawValue, 10, 64)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(int(value)).Convert(v.Type()))</span>
+        case reflect.Int8:<span class="cov0" title="0">
+                value, err := strconv.ParseInt(rawValue, 10, 8)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(int8(value)).Convert(v.Type()))</span>
+        case reflect.Int16:<span class="cov0" title="0">
+                value, err := strconv.ParseInt(rawValue, 10, 16)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(int16(value)).Convert(v.Type()))</span>
+        case reflect.Int32:<span class="cov0" title="0">
+                value, err := strconv.ParseInt(rawValue, 10, 32)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(int32(value)).Convert(v.Type()))</span>
+        case reflect.Int64:<span class="cov0" title="0">
+                value, err := strconv.ParseInt(rawValue, 10, 64)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">v.Set(reflect.ValueOf(value).Convert(v.Type()))</span>
+        case reflect.String:<span class="cov8" title="1">
+                v.Set(reflect.ValueOf(rawValue).Convert(v.Type()))</span>
+        case reflect.Struct:<span class="cov8" title="1">
+                v.Set(reflect.New(v.Type()).Elem())</span>
+        case reflect.Ptr:<span class="cov0" title="0">
+                v.Set(reflect.New(v.Type().Elem()))</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func printKeys(key string, v reflect.Value, vType reflect.StructField) <span class="cov0" title="0">{
+        switch v.Kind() </span>{
+        case reflect.Ptr:<span class="cov0" title="0">
+                setFieldFromEnv(key, v.Elem(), vType)</span>
+        case reflect.Struct:<span class="cov0" title="0">
+                reference := reflect.New(v.Type())
+                value := reference.Elem()
+
+                value.Set(v)
+                ReadEnvironmentInto("", reference.Interface())
+                v.Set(value)</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package factor3
+
+import (
+        "regexp"
+        "strings"
+)
+
+type macroCaseReplacer struct {
+        patternReplacements map[*regexp.Regexp]string
+}
+
+func NewMacroCaseReplacer() macroCaseReplacer <span class="cov8" title="1">{
+        patternReplacements := map[*regexp.Regexp]string{
+                regexp.MustCompile("([A-Z]+)([A-Z][a-z]+)"): "${1}_${2}",
+                regexp.MustCompile("([a-z]+)([A-Z]+)"):      "${1}_${2}",
+                regexp.MustCompile("[\\._]+"):               "_",
+        }
+
+        return macroCaseReplacer{
+                patternReplacements: patternReplacements,
+        }
+}</span>
+
+// This will attempt to convert straight-forward and conventional casing;
+// it is not intended to replace complex or non-intuitive casing
+func (m macroCaseReplacer) Replace(input string) string <span class="cov8" title="1">{
+        result := input
+
+        for pattern, replacement := range m.patternReplacements </span><span class="cov8" title="1">{
+                result = pattern.ReplaceAllString(result, replacement)
+        }</span>
+
+        <span class="cov8" title="1">result = strings.TrimSpace(result)
+        result = strings.ToUpper(result)
+        result = strings.Trim(result, "_")
+
+        return result</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

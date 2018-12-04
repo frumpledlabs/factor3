@@ -21,9 +21,9 @@ func main() {
 		NonExistingVariableValue: "",
 	}
 
-	err := factor3.ReadEnvironment().
+	err := factor3.LoadEnvironment().
 		WithVariablePrefix("").
-		ReadInto(&config)
+		Into(&config)
 
 	fmt.Println("Err:", err)
 	fmt.Println("Config:", config)

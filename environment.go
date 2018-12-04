@@ -5,7 +5,7 @@ type environment struct {
 }
 
 // Initialize config for the environemnt to load
-func ReadEnvironment() environment {
+func LoadEnvironment() environment {
 	return environment{}
 }
 
@@ -18,7 +18,7 @@ func (e environment) WithVariablePrefix(environmentVariablePrefix string) enviro
 
 // Read environment into given struct
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
-func (e environment) ReadInto(configStruct interface{}) error {
+func (e environment) Into(configStruct interface{}) error {
 	return ReadEnvironmentInto(
 		e.variablePrefix,
 		configStruct,

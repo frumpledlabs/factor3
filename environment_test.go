@@ -60,21 +60,21 @@ func Test_LoadVariablesWithPrefixPopluatesExpectedValues(t *testing.T) {
 func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 	os.Setenv("STRING_VAR", "STRING")
 	os.Setenv("INT_VAR", "1")
-	os.Setenv("INT8VAR", "8")
-	os.Setenv("INT16VAR", "16")
-	os.Setenv("INT32VAR", "32")
-	os.Setenv("INT64VAR", "64")
-	os.Setenv("FLOAT32VAR", "32.32")
-	os.Setenv("FLOAT64VAR", "64.64")
+	os.Setenv("INT8_VAR", "8")
+	os.Setenv("INT16_VAR", "16")
+	os.Setenv("INT32_VAR", "32")
+	os.Setenv("INT64_VAR", "64")
+	os.Setenv("FLOAT32_VAR", "32.32")
+	os.Setenv("FLOAT64_VAR", "64.64")
 
 	defer os.Unsetenv("STRING_VAR")
 	defer os.Unsetenv("INT_VAR")
-	defer os.Unsetenv("INT8VAR")
-	defer os.Unsetenv("INT16VAR")
-	defer os.Unsetenv("INT32VAR")
-	defer os.Unsetenv("INT64VAR")
-	defer os.Unsetenv("FLOAT32VAR")
-	defer os.Unsetenv("FLOAT64VAR")
+	defer os.Unsetenv("INT8_VAR")
+	defer os.Unsetenv("INT16_VAR")
+	defer os.Unsetenv("INT32_VAR")
+	defer os.Unsetenv("INT64_VAR")
+	defer os.Unsetenv("FLOAT32_VAR")
+	defer os.Unsetenv("FLOAT64_VAR")
 
 	config := struct {
 		StringVar  string

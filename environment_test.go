@@ -66,6 +66,7 @@ func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 	os.Setenv("INT64_VAR", "64")
 	os.Setenv("FLOAT32_VAR", "32.32")
 	os.Setenv("FLOAT64_VAR", "64.64")
+	os.Setenv("BOOL_VAR", "true")
 
 	defer os.Unsetenv("STRING_VAR")
 	defer os.Unsetenv("INT_VAR")
@@ -75,6 +76,7 @@ func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 	defer os.Unsetenv("INT64_VAR")
 	defer os.Unsetenv("FLOAT32_VAR")
 	defer os.Unsetenv("FLOAT64_VAR")
+	defer os.Unsetenv("BOOL_VAR")
 
 	config := struct {
 		StringVar  string
@@ -85,6 +87,7 @@ func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 		Int16Var   int16
 		Int32Var   int32
 		Int64Var   int64
+		BoolVar    bool
 	}{}
 
 	err := LoadEnvironment().
@@ -100,4 +103,81 @@ func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 	assert.Equal(t, int64(64), config.Int64Var)
 	assert.Equal(t, float32(32.32), config.Float32Var)
 	assert.Equal(t, float64(64.64), config.Float64Var)
+	assert.Equal(t, true, config.BoolVar)
+}
+
+func Test_GivenInvalidInput_ThenErrorIsReturnedWhenLoadingVariables(t *testing.T) {
+	os.Setenv("BOOL_VAR", "trueeeee")
+	os.Setenv("FLOAT32_VAR", "thirty-two")
+	os.Setenv("FLOAT64_VAR", "sixty-four")
+	os.Setenv("INT_VAR", "1.1")
+	os.Setenv("INT8_VAR", "8.1")
+	os.Setenv("INT16_VAR", "16.1")
+	os.Setenv("INT32_VAR", "32.1")
+	os.Setenv("INT64_VAR", "64.1")
+
+	defer os.Unsetenv("BOOL_VAR")
+	defer os.Unsetenv("FLOAT32_VAR")
+	defer os.Unsetenv("FLOAT64_VAR")
+	defer os.Unsetenv("INT_VAR")
+	defer os.Unsetenv("INT8_VAR")
+	defer os.Unsetenv("INT16_VAR")
+	defer os.Unsetenv("INT32_VAR")
+	defer os.Unsetenv("INT64_VAR")
+
+	var err error
+
+	err = LoadEnvironment().
+		Into(&struct {
+			BoolVar bool
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Float32Var float32
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Float64Var float64
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			IntVar int
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Int8Var int8
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Int16Var int16
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Int32Var int32
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			Int64Var int64
+		}{})
+	assert.NotNil(t, err)
+
+	err = LoadEnvironment().
+		Into(&struct {
+			BoolVar bool
+		}{})
+	assert.NotNil(t, err)
 }

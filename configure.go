@@ -46,7 +46,10 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	if isZeroValue(field) {
-		setField(envValue, field)
+		err = setField(envValue, field)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch field.Kind() {

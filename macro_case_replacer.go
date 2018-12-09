@@ -11,9 +11,10 @@ type macroCaseReplacer struct {
 
 func NewMacroCaseReplacer() macroCaseReplacer {
 	patternReplacements := map[*regexp.Regexp]string{
-		regexp.MustCompile("([A-Z]+)([A-Z][a-z]+)"): "${1}_${2}",
-		regexp.MustCompile("([a-z]+)([A-Z]+)"):      "${1}_${2}",
-		regexp.MustCompile("[\\._]+"):               "_",
+		regexp.MustCompile("([A-Z]+)([A-Z][a-z]+)"):       "${1}_${2}",
+		regexp.MustCompile("([a-z]+)([A-Z]+)"):            "${1}_${2}",
+		regexp.MustCompile("[\\._]+"):                     "_",
+		regexp.MustCompile("([A-Z]+[a-z]*[0-9]+)([A-Z])"): "${1}_${2}",
 	}
 
 	return macroCaseReplacer{

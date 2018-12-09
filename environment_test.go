@@ -56,20 +56,3 @@ func Test_LoadVariablesWithPrefixPopluatesExpectedValues(t *testing.T) {
 
 	assert.Equal(t, expectedStringVal, config.StringVar)
 }
-
-func Test_LoadVariablesWithConfigOverridesPopulatesExpectedValues(t *testing.T) {
-	expectedStringVal := "PASSED"
-	os.Setenv("A_DIFFERENT_NAME", expectedStringVal)
-	defer os.Unsetenv("A_DIFFERENT_NAME")
-
-	config := struct {
-		StringVar string `envVar:"A_DIFFERENT_NAME"`
-	}{}
-
-	err := LoadEnvironment().
-		Into(&config)
-
-	require.Nil(t, err)
-
-	assert.Equal(t, expectedStringVal, config.StringVar)
-}

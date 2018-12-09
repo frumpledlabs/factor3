@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/frumpled/factor3.svg)](https://travis-ci.org/frumpled/factor3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/frumpled/factor3)](https://goreportcard.com/report/github.com/frumpled/factor3)
 [![GoDoc](https://godoc.org/github.com/frumpled/factor3?status.svg)](https://godoc.org/github.com/frumpled/factor3)
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-58%25-brightgreen.svg?longCache=true&style=flat)</a>
+[![Coverage](https://coveralls.io/repos/github/frumpled/factor3/badge.svg?branch=master)](https://coveralls.io/github/frumpled/factor3?branch=master)
 
 ## Overview
 #### TLDR

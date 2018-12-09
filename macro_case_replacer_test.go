@@ -29,6 +29,9 @@ func Test_MacroCaseReplacer(t *testing.T) {
 		"someJSON":      "SOME_JSON",
 		"moarJSONData":  "MOAR_JSON_DATA",
 		"JSONPi":        "JSON_PI",
+
+		// Mixed Character Tests:
+		"Int64Var": "INT64_VAR",
 	}
 
 	for input, expected := range testCases {

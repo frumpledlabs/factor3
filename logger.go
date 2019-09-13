@@ -13,10 +13,26 @@ type Logger interface {
 	Error(string, map[string]interface{})
 	Warn(string, map[string]interface{})
 	Fatal(string, map[string]interface{})
+
+	SetLevel(logrus.Level)
 }
 
+const (
+	// DebugLevel sets logger to log Debug lvl events and higher
+	DebugLevel = logrus.DebugLevel
+
+	// InfoLevel sets logger to log Info lvl events and higher
+	InfoLevel = logrus.InfoLevel
+
+	// ErrorLevel sets logger to log Error lvl events and higher
+	ErrorLevel = logrus.ErrorLevel
+
+	// WarnLevel sets logger to log Warn lvl events and higher
+	WarnLevel = logrus.WarnLevel
+)
+
 type logger struct {
-	*logrus.Logger
+	logrusLogger *logrus.Logger
 }
 
 // NewLogger returns a new logger w/ default configs
@@ -26,26 +42,31 @@ func NewLogger() Logger {
 	logrusLogger.SetLevel(logrus.InfoLevel)
 
 	return logger{
-		logrusLogger,
+		logrusLogger: logrusLogger,
 	}
 }
 
 func (l logger) Debug(msg string, fields map[string]interface{}) {
-	l.WithFields(fields).Debug(msg)
+	l.logrusLogger.WithFields(fields).Debug(msg)
 }
 
 func (l logger) Info(msg string, fields map[string]interface{}) {
-	l.WithFields(fields).Info(msg)
+	l.logrusLogger.WithFields(fields).Info(msg)
 }
 
 func (l logger) Error(msg string, fields map[string]interface{}) {
-	l.WithFields(fields).Error(msg)
+	l.logrusLogger.WithFields(fields).Error(msg)
 }
 
 func (l logger) Warn(msg string, fields map[string]interface{}) {
-	l.WithFields(fields).Warn(msg)
+	l.logrusLogger.WithFields(fields).Warn(msg)
 }
 
 func (l logger) Fatal(msg string, fields map[string]interface{}) {
-	l.WithFields(fields).Fatal(msg)
+	l.logrusLogger.WithFields(fields).Fatal(msg)
+}
+
+func (l logger) SetLevel(lvl logrus.Level) {
+	println("SetLevel():", lvl)
+	l.logrusLogger.SetLevel(lvl)
 }

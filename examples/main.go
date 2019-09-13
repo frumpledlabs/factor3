@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -8,24 +9,16 @@ import (
 )
 
 func main() {
-	fmt.Println("vim-go")
+	os.Setenv("APP_EXAMPLE_DEFINED_VAR", "SUP")
 
-	os.Setenv("EXISTING_VARIABLE_VALUE", "PASSED")
-	defer os.Unsetenv("EXISTING_VARIABLE_VALUE")
+	conf := struct {
+		UndefinedVar string `envDefault:"Default value used"`
+		DefinedVar   string `env:"required" envDefault:"Default value used"`
+	}{}
 
-	config := struct {
-		ExistingVariableValue    string
-		NonExistingVariableValue string
-	}{
-		ExistingVariableValue:    "",
-		NonExistingVariableValue: "",
-	}
+	factor3.ReadEnvironmentInto("APP_EXAMPLE", &conf)
 
-	err := factor3.LoadEnvironment().
-		WithVariablePrefix("").
-		Into(&config)
-
-	fmt.Println("Err:", err)
-	fmt.Println("Config:", config)
-
+	// Pretty print the conf variable:
+	jsonString, _ := json.Marshal(&conf)
+	fmt.Println(string(jsonString))
 }

@@ -1,6 +1,8 @@
-package factor3
+package logger
 
 import (
+	"io/ioutil"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,7 +16,8 @@ type Logger interface {
 	Warn(string, map[string]interface{})
 	Fatal(string, map[string]interface{})
 
-	SetLevel(logrus.Level)
+	Disable()
+	WithLevel(logrus.Level) Logger
 }
 
 const (
@@ -29,14 +32,17 @@ const (
 
 	// WarnLevel sets logger to log Warn lvl events and higher
 	WarnLevel = logrus.WarnLevel
+
+	// FatalLevel sets logger to log Fatal lvl events and higher
+	FatalLevel = logrus.FatalLevel
 )
 
 type logger struct {
 	logrusLogger *logrus.Logger
 }
 
-// NewLogger returns a new logger w/ default configs
-func NewLogger() Logger {
+// New returns a new Logger w/ default configs
+func New() Logger {
 	logrusLogger := logrus.New()
 	logrusLogger.SetFormatter(&logrus.JSONFormatter{})
 	logrusLogger.SetLevel(logrus.InfoLevel)
@@ -66,7 +72,11 @@ func (l logger) Fatal(msg string, fields map[string]interface{}) {
 	l.logrusLogger.WithFields(fields).Fatal(msg)
 }
 
-func (l logger) SetLevel(lvl logrus.Level) {
-	println("SetLevel():", lvl)
+func (l logger) WithLevel(lvl logrus.Level) Logger {
 	l.logrusLogger.SetLevel(lvl)
+	return l
+}
+
+func (l logger) Disable() {
+	l.logrusLogger.Out = ioutil.Discard
 }

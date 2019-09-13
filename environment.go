@@ -4,7 +4,7 @@ type environment struct {
 	variablePrefix string
 }
 
-// Initialize config for the environemnt to load
+// LoadEnvironment initializes the environemnt w/ default configuration
 func LoadEnvironment() environment {
 	return environment{}
 }
@@ -12,11 +12,14 @@ func LoadEnvironment() environment {
 // Set a prefix to use when fetchnig environment variables
 func (e environment) WithVariablePrefix(environmentVariablePrefix string) environment {
 	e.variablePrefix = environmentVariablePrefix
-	log.Info("Using environment variable prefix: '" + environmentVariablePrefix + "'")
+	log.Info("Using environment variable prefix.",
+		map[string]interface{}{
+			"prefix": environmentVariablePrefix,
+		})
 	return e
 }
 
-// Read environment into given struct
+// Into reads local environment into this "environment" instance
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
 func (e environment) Into(configStruct interface{}) error {
 	return readEnvironmentInto(

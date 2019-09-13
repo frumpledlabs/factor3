@@ -7,7 +7,7 @@ import (
 )
 
 func Test_MacroCaseReplacer(t *testing.T) {
-	macroCaser := NewMacroCaseReplacer()
+	macroCaser := newMacroCaseReplacer()
 
 	testCases := map[string]string{
 		// Documentation tests:

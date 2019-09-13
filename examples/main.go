@@ -12,9 +12,12 @@ func main() {
 	os.Setenv("APP_EXAMPLE_DEFINED_VAR", "SUP")
 
 	conf := struct {
-		UndefinedVar string `envDefault:"Default value used"`
-		DefinedVar   string `env:"required" envDefault:"Default value used"`
+		UndefinedVar string `envDefault:"PASSED: Default value used"`
+		DefinedVar   string `env:"required" envDefault:"PASSED: Default value used"`
+		RequiredVar  string `env:"required"`
 	}{}
+
+	os.Setenv("APP_EXAMPLE_REQUIRED_VAR", "PASSED:  Required var loaded from env")
 
 	factor3.
 		LoadEnvironment().

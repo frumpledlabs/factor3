@@ -19,7 +19,7 @@ func (e environment) WithVariablePrefix(environmentVariablePrefix string) enviro
 // Read environment into given struct
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
 func (e environment) Into(configStruct interface{}) error {
-	return ReadEnvironmentInto(
+	return readEnvironmentInto(
 		e.variablePrefix,
 		configStruct,
 	)

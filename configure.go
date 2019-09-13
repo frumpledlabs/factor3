@@ -8,7 +8,7 @@ import (
 
 // ReadEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
-func ReadEnvironmentInto(prefix string, input interface{}) error {
+func readEnvironmentInto(prefix string, input interface{}) error {
 	if reflect.TypeOf(input).Kind() != reflect.Ptr {
 		return errors.New("Expected a struct pointer")
 	}
@@ -60,7 +60,7 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		value := reference.Elem()
 
 		value.Set(field)
-		ReadEnvironmentInto(key, reference.Interface())
+		readEnvironmentInto(key, reference.Interface())
 		field.Set(value)
 	}
 

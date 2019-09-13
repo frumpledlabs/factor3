@@ -16,7 +16,10 @@ func main() {
 		DefinedVar   string `env:"required" envDefault:"Default value used"`
 	}{}
 
-	factor3.ReadEnvironmentInto("APP_EXAMPLE", &conf)
+	factor3.
+		LoadEnvironment().
+		WithVariablePrefix("APP_EXAMPLE").
+		Into(&conf)
 
 	// Pretty print the conf variable:
 	jsonString, _ := json.Marshal(&conf)

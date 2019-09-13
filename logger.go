@@ -8,8 +8,9 @@ import (
 // that outputs JSON logs
 // and an optional map of custom fields & values
 type Logger interface {
-	Info(string, map[string]interface{})
 	Debug(string, map[string]interface{})
+	Info(string, map[string]interface{})
+	Error(string, map[string]interface{})
 	Warn(string, map[string]interface{})
 	Fatal(string, map[string]interface{})
 }
@@ -35,6 +36,10 @@ func (l logger) Debug(msg string, fields map[string]interface{}) {
 
 func (l logger) Info(msg string, fields map[string]interface{}) {
 	l.WithFields(fields).Info(msg)
+}
+
+func (l logger) Error(msg string, fields map[string]interface{}) {
+	l.WithFields(fields).Error(msg)
 }
 
 func (l logger) Warn(msg string, fields map[string]interface{}) {

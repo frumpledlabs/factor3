@@ -34,10 +34,12 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	var macroCaser = NewMacroCaseReplacer()
 
 	if !field.CanSet() {
-		return errors.New("Field cannot be set")
+		log.Error("Field cannot be set.", "field", field) // TODO: Untested; determien how to get actual field name
+		return errors.New("Field cannot be set.")
 	}
 
 	key := fmt.Sprintf("%s_%s", prefix, fieldType.Name)
+	// originalKey := key
 	key = macroCaser.Replace(key)
 
 	envValue, err := getEnvValueForField(fieldType, key)
@@ -63,6 +65,8 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		readEnvironmentInto(key, reference.Interface())
 		field.Set(value)
 	}
+
+	log.Info("Set field value.", "field", fieldType.Name, "variable", key)
 
 	return nil
 }

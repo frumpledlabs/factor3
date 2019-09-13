@@ -12,7 +12,7 @@ func LoadEnvironment() environment {
 // Set a prefix to use when fetchnig environment variables
 func (e environment) WithVariablePrefix(environmentVariablePrefix string) environment {
 	e.variablePrefix = environmentVariablePrefix
-
+	log.Info("Using environment variable prefix: '" + environmentVariablePrefix + "'")
 	return e
 }
 

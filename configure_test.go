@@ -8,20 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(m *testing.M) {
-
-	// Setup:
-	log.Disable()
-
-	// Run Tests:
-	code := m.Run()
-
-	// Cleanup:
-
-	// Finish
-	os.Exit(code)
-}
-
 func Test_SingleRootLevelVariableIsReadEnvironmentIntoed(t *testing.T) {
 	os.Setenv("TEST", "PASS")
 	defer os.Unsetenv("PASS")

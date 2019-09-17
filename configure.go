@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// ReadEnvironmentInto environment into given configuration variable, using specific
+// readEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
 func readEnvironmentInto(prefix string, input interface{}) error {
 	if reflect.TypeOf(input).Kind() != reflect.Ptr {
@@ -31,15 +31,18 @@ func readEnvironmentInto(prefix string, input interface{}) error {
 }
 
 func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error {
-	var macroCaser = NewMacroCaseReplacer()
+	var macroCaser = newMacroCaseReplacer()
 
 	if !field.CanSet() {
-		log.Error("Field cannot be set.", "field", field) // TODO: Untested; determien how to get actual field name
-		return errors.New("Field cannot be set.")
+		log.Error("Field cannot be set.",
+			map[string]interface{}{
+				"field": field,
+			},
+		)
+		return errors.New("field cannot be set")
 	}
 
 	key := fmt.Sprintf("%s_%s", prefix, fieldType.Name)
-	// originalKey := key
 	key = macroCaser.Replace(key)
 
 	envValue, err := getEnvValueForField(fieldType, key)
@@ -66,7 +69,12 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		field.Set(value)
 	}
 
-	log.Info("Set field value.", "field", fieldType.Name, "variable", key)
+	log.Info(
+		"Set field value.",
+		map[string]interface{}{
+			"field":    fieldType.Name,
+			"variable": key,
+		})
 
 	return nil
 }

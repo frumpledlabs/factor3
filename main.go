@@ -1,10 +1,15 @@
 package factor3
 
-var log Logger
+import (
+	"github.com/frumpled/factor3/logger"
+)
+
+var log logger.Logger
 
 func init() {
-	log = NewLogger()
+	log = logger.
+		New().
+		WithLevel(logger.InfoLevel)
 
-	log.SetLevel(InfoLevel)
-	log.Info("initializing logger", nil)
+	// log.Info("initializing logger", nil)
 }

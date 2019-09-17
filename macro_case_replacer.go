@@ -9,7 +9,7 @@ type macroCaseReplacer struct {
 	patternReplacements map[*regexp.Regexp]string
 }
 
-func NewMacroCaseReplacer() macroCaseReplacer {
+func newMacroCaseReplacer() macroCaseReplacer {
 	patternReplacements := map[*regexp.Regexp]string{
 		regexp.MustCompile("([A-Z]+)([A-Z][a-z]+)"):       "${1}_${2}",
 		regexp.MustCompile("([a-z]+)([A-Z]+)"):            "${1}_${2}",

@@ -1,7 +1,6 @@
 package factor3
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -32,6 +31,7 @@ func Test_NestedVariableIsReadEnvironmentIntoed(t *testing.T) {
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
+
 	assert.Nil(t, err)
 	assert.Equal(t, "PASS", conf.Another.Test)
 }
@@ -108,7 +108,7 @@ func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func ExampleReadEnvironmentInto() {
+func ExampleLoadEnvironment() {
 	os.Setenv("STRING", "String value")
 	os.Setenv("BOOL", "true")
 	os.Setenv("INT", "42")
@@ -139,9 +139,9 @@ func ExampleReadEnvironmentInto() {
 	}{}
 
 	LoadEnvironment().Into(&conf)
-	fmt.Println(conf)
+	// println(conf)
 
 	// Import "encoding/json" to pretty print:
 	// jsonString, _ := json.Marshal(&conf)
-	// fmt.Println(string(jsonString))
+	// log.Info(string(jsonString))
 }

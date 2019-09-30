@@ -145,3 +145,40 @@ func ExampleLoadEnvironment() {
 	// jsonString, _ := json.Marshal(&conf)
 	// log.Info(string(jsonString))
 }
+
+func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {
+	conf := struct {
+		RequiredValue string `envOpts:"required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.NotNil(t, err)
+}
+
+func TestLoadRequiredFieldWithValueSucceeds(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("REQUIRED_VALUE", expected)
+
+	conf := struct {
+		RequiredValue string `envOpts:"required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, conf.RequiredValue)
+}
+
+func TestLoadingFieldWithOverrideNameLoads(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("SomeOtherFieldName", expected)
+
+	conf := struct {
+		Field string `env:"SomeOtherFieldName"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, conf.Field)
+}

@@ -6,6 +6,11 @@ import (
 	"reflect"
 )
 
+const tagEnvName = "env"
+const tagEnvOptions = "envOpts"
+
+const tagEnvRequired = "required"
+
 // readEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
 func readEnvironmentInto(prefix string, input interface{}) error {
@@ -31,6 +36,9 @@ func readEnvironmentInto(prefix string, input interface{}) error {
 }
 
 func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error {
+	var err error
+	var exists bool
+
 	var macroCaser = newMacroCaseReplacer()
 
 	if !field.CanSet() {
@@ -42,19 +50,37 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		return errors.New("field cannot be set")
 	}
 
-	key := fmt.Sprintf("%s_%s", prefix, fieldType.Name)
-	key = macroCaser.Replace(key)
+	var key string
+	key, exists = fieldType.Tag.Lookup(tagEnvName)
+	if !exists {
+		key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
+		key = macroCaser.Replace(key)
+	}
 
-	envValue, err := getEnvValueForField(fieldType, key)
+	var envValue string
+
+	// exists := false
+	// envValue, exists = fieldType.Tag.Lookup(tagEnvName)
+
+	// if !exists {
+	envValue, err = getEnvValueForField(fieldType, key)
 	if err != nil {
 		return err
 	}
+	// }
 
 	if isZeroValue(field) {
 		err = setField(envValue, field)
 		if err != nil {
 			return err
 		}
+
+		log.Info(
+			"Set field value.",
+			map[string]interface{}{
+				"field":    fieldType.Name,
+				"variable": key,
+			})
 	}
 
 	switch field.Kind() {
@@ -69,12 +95,9 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		field.Set(value)
 	}
 
-	log.Info(
-		"Set field value.",
-		map[string]interface{}{
-			"field":    fieldType.Name,
-			"variable": key,
-		})
-
 	return nil
 }
+
+// func setFieldValue(prefix string, field reflect.Value, fieldType reflect.StructField) error {
+
+// }

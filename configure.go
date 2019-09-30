@@ -58,16 +58,10 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	var envValue string
-
-	// exists := false
-	// envValue, exists = fieldType.Tag.Lookup(tagEnvName)
-
-	// if !exists {
 	envValue, err = getEnvValueForField(fieldType, key)
 	if err != nil {
 		return err
 	}
-	// }
 
 	if isZeroValue(field) {
 		err = setField(envValue, field)
@@ -81,6 +75,11 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 				"field":    fieldType.Name,
 				"variable": key,
 			})
+	}
+
+	_, isRequired := fieldType.Tag.Lookup(tagEnvRequired)
+	if isRequired && field.IsNil() {
+		return errors.New("Required field not set.")
 	}
 
 	switch field.Kind() {

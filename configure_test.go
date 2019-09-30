@@ -152,7 +152,7 @@ func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 }
 
 func TestLoadRequiredFieldWithValueSucceeds(t *testing.T) {
@@ -180,5 +180,18 @@ func TestLoadingFieldWithOverrideNameLoads(t *testing.T) {
 	err := LoadEnvironment().Into(&conf)
 	assert.Nil(t, err)
 
+	assert.Equal(t, expected, conf.Field)
+}
+
+func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("SomeOtherFieldName", expected)
+
+	conf := struct {
+		Field string `env:"SomeOtherFieldName" envOpts:"required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
 	assert.Equal(t, expected, conf.Field)
 }

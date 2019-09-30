@@ -160,7 +160,7 @@ func TestLoadRequiredFieldWithValueSucceeds(t *testing.T) {
 	os.Setenv("REQUIRED_VALUE", expected)
 
 	conf := struct {
-		RequiredValue string `envOpts:"required"`
+		RequiredValue string `env:"required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -188,7 +188,7 @@ func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
 	os.Setenv("SomeOtherFieldName", expected)
 
 	conf := struct {
-		Field string `env:"SomeOtherFieldName" envOpts:"required"`
+		Field string `env:"SomeOtherFieldName,required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)

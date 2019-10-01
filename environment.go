@@ -1,5 +1,9 @@
 package factor3
 
+import (
+	"github.com/frumpled/factor3/logger"
+)
+
 type environment struct {
 	variablePrefix string
 }
@@ -26,4 +30,10 @@ func (e environment) Into(configStruct interface{}) error {
 		e.variablePrefix,
 		configStruct,
 	)
+}
+
+func (e environment) Debug() environment {
+	log.WithLevel(logger.DebugLevel)
+
+	return e
 }

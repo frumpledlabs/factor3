@@ -9,7 +9,7 @@ const labelIsRequired = "required"
 
 var valuesDefinitionPattern = regexp.MustCompile(`\${.*(:-)?.*}`)
 
-type tagSet struct {
+type fieldData struct {
 	definition      string
 	defaultValue    string
 	overrideKey     string
@@ -18,24 +18,24 @@ type tagSet struct {
 	hasDefaultValue bool
 }
 
-func newTagSet(input string) tagSet {
-	ts := tagSet{
+func newFieldData(input string) fieldData {
+	fd := fieldData{
 		definition: input,
 	}
 
 	tags := strings.Split(input, ",")
 	if len(tags) == 0 {
-		return ts
+		return fd
 	}
 
-	ts.parseValuesDefinition()
-	ts.parseKnownLabels()
+	fd.parseValuesDefinition()
+	fd.parseKnownLabels()
 
-	return ts
+	return fd
 }
 
-func (t *tagSet) parseValuesDefinition() {
-	valueDefinition := strings.Split(t.definition, ",")[0]
+func (fd *fieldData) parseValuesDefinition() {
+	valueDefinition := strings.Split(fd.definition, ",")[0]
 
 	if !valuesDefinitionPattern.MatchString(valueDefinition) {
 		return
@@ -59,23 +59,23 @@ func (t *tagSet) parseValuesDefinition() {
 	if hasPrefix {
 		override := values[0]
 		override = strings.TrimRight(override, ":-")
-		t.overrideKey = override
-		t.keyIsOverriden = true
+		fd.overrideKey = override
+		fd.keyIsOverriden = true
 
 		values = values[1:]
 	}
 
 	if hasSuffix {
-		t.defaultValue = values[0]
-		t.hasDefaultValue = true
+		fd.defaultValue = values[0]
+		fd.hasDefaultValue = true
 	}
 }
 
-func (t *tagSet) parseKnownLabels() {
-	for _, tag := range strings.Split(t.definition, ",") {
+func (fd *fieldData) parseKnownLabels() {
+	for _, tag := range strings.Split(fd.definition, ",") {
 		switch tag {
 		case labelIsRequired:
-			t.isRequired = true
+			fd.isRequired = true
 		}
 	}
 }

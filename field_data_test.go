@@ -6,32 +6,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_TagSetRecognizesBuiltinTags(t *testing.T) {
+func Test_FieldDataRecognizesBuiltinTags(t *testing.T) {
 	input := `required`
-	tagSet := newTagSet(input)
+	fieldData := newFieldData(input)
 
-	assert.True(t, tagSet.isRequired)
+	assert.True(t, fieldData.isRequired)
 }
 
 func Test_OverrideValueIsParsed(t *testing.T) {
 	input := `${SOMETHING_ELSE},required`
-	tagSet := newTagSet(input)
+	fieldData := newFieldData(input)
 
-	assert.Equal(t, "SOMETHING_ELSE", tagSet.overrideKey)
+	assert.Equal(t, "SOMETHING_ELSE", fieldData.overrideKey)
 }
 
 func Test_DefaultValueIsParsed(t *testing.T) {
 	input := `${:-DEFAULT_VALUE}`
-	tagSet := newTagSet(input)
+	fieldData := newFieldData(input)
 
-	assert.Equal(t, "DEFAULT_VALUE", tagSet.defaultValue)
+	assert.Equal(t, "DEFAULT_VALUE", fieldData.defaultValue)
 }
 
 func Test_OverrideValueIsParsedWithoutDefaultValue(t *testing.T) {
 	input := `${OVERRIDE:-},required`
-	tagSet := newTagSet(input)
+	fieldData := newFieldData(input)
 
-	assert.Equal(t, "OVERRIDE", tagSet.overrideKey)
+	assert.Equal(t, "OVERRIDE", fieldData.overrideKey)
 }
 
 // func Test_MalformedInputsReturnError(t *testing.T) {

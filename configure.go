@@ -57,14 +57,14 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	key = macroCaser.Replace(key)
 
 	tagDefinition, exists := fieldType.Tag.Lookup(tagEnvName)
-	ts := newTagSet(tagDefinition)
+	fieldData := newFieldData(tagDefinition)
 	if exists {
-		if ts.keyIsOverriden {
-			key = ts.overrideKey
+		if fieldData.keyIsOverriden {
+			key = fieldData.overrideKey
 		}
 
-		if ts.hasDefaultValue {
-			defaultValue = ts.defaultValue
+		if fieldData.hasDefaultValue {
+			defaultValue = fieldData.defaultValue
 		}
 	}
 
@@ -79,7 +79,7 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 			envValue = defaultValue
 		}
 
-		if envValue == "" && ts.isRequired {
+		if envValue == "" && fieldData.isRequired {
 			return errors.New("required field not set")
 		}
 

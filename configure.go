@@ -15,14 +15,14 @@ const tagEnvRequired = "required"
 // tags to determine requirements, values, and behavior.
 func readEnvironmentInto(prefix string, input interface{}) error {
 	if reflect.TypeOf(input).Kind() != reflect.Ptr {
-		return errors.New("Expected a struct pointer")
+		return errors.New("expected a pointer")
 	}
 
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
 
 	if inputType.Kind() != reflect.Struct {
-		return errors.New("Expected a struct pointer")
+		return errors.New("expected a struct")
 	}
 
 	for i := 0; i < inputType.NumField(); i++ {
@@ -51,10 +51,15 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	var key string
-	key, exists = fieldType.Tag.Lookup(tagEnvName)
-	if !exists {
-		key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
-		key = macroCaser.Replace(key)
+	key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
+	key = macroCaser.Replace(key)
+
+	tagDefinition, exists := fieldType.Tag.Lookup(tagEnvName)
+	ts := newTagSet(tagDefinition)
+	if exists {
+		if ts.keyIsOverriden {
+			key = ts.overrideKey
+		}
 	}
 
 	var envValue string
@@ -77,11 +82,6 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 			})
 	}
 
-	_, isRequired := fieldType.Tag.Lookup(tagEnvRequired)
-	if isRequired && field.IsNil() {
-		return errors.New("Required field not set.")
-	}
-
 	switch field.Kind() {
 	case reflect.Ptr:
 		setFieldFromEnv(key, field.Elem(), fieldType)
@@ -92,6 +92,12 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		value.Set(field)
 		readEnvironmentInto(key, reference.Interface())
 		field.Set(value)
+
+		// case reflect.String:
+		// 	if ts.isRequired {
+		// 		println("Valid:", field.IsValid())
+		// 		return errors.New("required field not set")
+		// 	}
 	}
 
 	return nil

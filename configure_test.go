@@ -100,7 +100,7 @@ func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 
 func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	conf := struct {
-		RequiredWithDefault string `env:"required" envDefault:"DEFAULT"`
+		RequiredWithDefault string `env:"${:-DEFAULT},required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -155,7 +155,7 @@ func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestLoadRequiredFieldWithValueSucceeds(t *testing.T) {
+func Test_LoadRequiredFieldWithValueSucceeds(t *testing.T) {
 	expected := "PASSED"
 	os.Setenv("REQUIRED_VALUE", expected)
 
@@ -169,12 +169,31 @@ func TestLoadRequiredFieldWithValueSucceeds(t *testing.T) {
 	assert.Equal(t, expected, conf.RequiredValue)
 }
 
+// func Test_LoadRequiredFieldWithoutValueFails(t *testing.T) {
+// 	conf := struct {
+// 		RequiredValue string `env:"required"`
+// 	}{}
+
+// 	err := LoadEnvironment().Into(&conf)
+// 	assert.NotNil(t, err)
+// }
+
+// func Test_LoadRequiredFieldWithDefaultValueSucceeds(t *testing.T) {
+// 	conf := struct {
+// 		RequiredValue string `env:"${:-DEFAULT_VALUE},required"`
+// 	}{}
+
+// 	err := LoadEnvironment().Into(&conf)
+// 	assert.Nil(t, err)
+// 	assert.Equal(t, "DEFAULT_VALUE", conf.RequiredValue)
+// }
+
 func TestLoadingFieldWithOverrideNameLoads(t *testing.T) {
 	expected := "PASSED"
 	os.Setenv("SomeOtherFieldName", expected)
 
 	conf := struct {
-		Field string `env:"SomeOtherFieldName"`
+		Field string `env:"${SomeOtherFieldName}"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -188,7 +207,7 @@ func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
 	os.Setenv("SomeOtherFieldName", expected)
 
 	conf := struct {
-		Field string `env:"SomeOtherFieldName,required"`
+		Field string `env:"${SomeOtherFieldName},required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)

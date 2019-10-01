@@ -10,10 +10,12 @@ const labelIsRequired = "required"
 var valuesDefinitionPattern = regexp.MustCompile(`\${.*(:-)?.*}`)
 
 type tagSet struct {
-	definition   string
-	defaultValue string
-	overrideKey  string
-	isRequired   bool
+	definition      string
+	defaultValue    string
+	overrideKey     string
+	isRequired      bool
+	keyIsOverriden  bool
+	hasDefaultValue bool
 }
 
 func newTagSet(input string) tagSet {
@@ -36,7 +38,6 @@ func (t *tagSet) parseValuesDefinition() {
 	valueDefinition := strings.Split(t.definition, ",")[0]
 
 	if !valuesDefinitionPattern.MatchString(valueDefinition) {
-		println("Not matched")
 		return
 	}
 
@@ -59,12 +60,14 @@ func (t *tagSet) parseValuesDefinition() {
 		override := values[0]
 		override = strings.TrimRight(override, ":-")
 		t.overrideKey = override
+		t.keyIsOverriden = true
 
 		values = values[1:]
 	}
 
 	if hasSuffix {
 		t.defaultValue = values[0]
+		t.hasDefaultValue = true
 	}
 }
 

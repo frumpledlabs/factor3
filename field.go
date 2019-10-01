@@ -42,11 +42,7 @@ func getEnvValueForField(field reflect.StructField, key string) (string, error) 
 	return value, nil
 }
 
-func setField(rawValue string, v reflect.Value, defaultValue string) error {
-	if rawValue == "" {
-		rawValue = defaultValue
-	}
-
+func setField(rawValue string, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)

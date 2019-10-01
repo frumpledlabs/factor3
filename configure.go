@@ -12,7 +12,10 @@ var macroCaser = newMacroCaseReplacer()
 
 // readEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
-func readEnvironmentInto(prefix string, input interface{}) error {
+func readEnvironmentInto(
+	prefix string,
+	input interface{},
+) error {
 	if reflect.TypeOf(input).Kind() != reflect.Ptr {
 		return errors.New("expected a pointer")
 	}
@@ -82,12 +85,12 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 			return errors.New("required field not set")
 		}
 
-		err = setField(envValue, field, defaultValue)
+		err = setField(envValue, field)
 		if err != nil {
 			return err
 		}
 
-		log.Info(
+		log.Debug(
 			"Set field value.",
 			map[string]interface{}{
 				"field":    fieldType.Name,
@@ -108,16 +111,5 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		field.Set(value)
 	}
 
-	log.Info(
-		"Set field value.",
-		map[string]interface{}{
-			"field":    fieldType.Name,
-			"variable": key,
-		})
-
 	return nil
 }
-
-// func setFieldValue(prefix string, field reflect.Value, fieldType reflect.StructField) error {
-
-// }

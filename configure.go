@@ -7,9 +7,6 @@ import (
 )
 
 const tagEnvName = "env"
-const tagEnvOptions = "envOpts"
-
-const tagEnvRequired = "required"
 
 // readEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
@@ -107,6 +104,13 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		readEnvironmentInto(key, reference.Interface())
 		field.Set(value)
 	}
+
+	log.Info(
+		"Set field value.",
+		map[string]interface{}{
+			"field":    fieldType.Name,
+			"variable": key,
+		})
 
 	return nil
 }

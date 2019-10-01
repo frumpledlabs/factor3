@@ -17,10 +17,6 @@ func isZeroValue(v reflect.Value) bool {
 	)
 }
 
-func isZeroOfUnderlyingType(x interface{}) bool {
-	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
-}
-
 func getEnvValueForField(field reflect.StructField, key string) (string, error) {
 	// tagSet := newTagSet(tags)
 

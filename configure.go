@@ -8,6 +8,8 @@ import (
 
 const tagEnvName = "env"
 
+var macroCaser = newMacroCaseReplacer()
+
 // readEnvironmentInto environment into given configuration variable, using specific
 // tags to determine requirements, values, and behavior.
 func readEnvironmentInto(prefix string, input interface{}) error {
@@ -35,8 +37,8 @@ func readEnvironmentInto(prefix string, input interface{}) error {
 func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error {
 	var err error
 	var exists bool
-
-	var macroCaser = newMacroCaseReplacer()
+	var key string
+	var defaultValue string
 
 	if !field.CanSet() {
 		log.Error("Field cannot be set.",
@@ -44,18 +46,18 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 				"field": field,
 			},
 		)
+
 		return errors.New("field cannot be set")
 	}
-
-	var key string
-	var defaultValue string
 
 	key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
 	key = macroCaser.Replace(key)
 
 	tagDefinition, exists := fieldType.Tag.Lookup(tagEnvName)
-	fieldData := newFieldData(tagDefinition)
+	var fieldData fieldData
+
 	if exists {
+		fieldData = newFieldData(tagDefinition)
 		if fieldData.keyIsOverriden {
 			key = fieldData.overrideKey
 		}
@@ -90,7 +92,8 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 			map[string]interface{}{
 				"field":    fieldType.Name,
 				"variable": key,
-			})
+			},
+		)
 	}
 
 	switch field.Kind() {

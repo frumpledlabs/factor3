@@ -38,7 +38,7 @@ func Test_NestedVariableIsReadEnvironmentIntoed(t *testing.T) {
 
 func Test_UnsetRequiredVariableErrors(t *testing.T) {
 	conf := struct {
-		UnsetRequiredVar string `envRequired:"true"`
+		UnsetRequiredVar string `env:"required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -50,7 +50,7 @@ func Test_SetRequiredVariableReadEnvironmentIntoWithoutError(t *testing.T) {
 	defer os.Unsetenv("REQUIRED_VAR")
 
 	conf := struct {
-		RequiredVar string `envRequired:"true"`
+		RequiredVar string `env:"required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -63,7 +63,7 @@ func Test_DefaultValueOverridden(t *testing.T) {
 
 	conf := struct {
 		Default struct {
-			KeyExists string `envDefault:"DEFAULT"`
+			KeyExists string `env:"${:-DEFAULT}"`
 		}
 	}{}
 
@@ -78,7 +78,7 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 	defer os.Unsetenv("DEFAULT_KEY_IS_EMPTY_STRING")
 
 	conf := struct {
-		defaultKeyIsEmptyString string `envDefault:"EMPTY"`
+		defaultKeyIsEmptyString string `env:"${:-EMPTY}"`
 	}{}
 
 	LoadEnvironment().Into(&conf)
@@ -88,8 +88,8 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 
 func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 	conf := struct {
-		DefaultKeySet string `envDefault:"DEFAULT"`
-		DefaultBool   bool   `envDefault:"true"`
+		DefaultKeySet string `env:"${:-DEFAULT}"`
+		DefaultBool   bool   `env:"${:-true}"`
 	}{}
 
 	LoadEnvironment().Into(&conf)

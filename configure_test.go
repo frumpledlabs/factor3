@@ -38,7 +38,7 @@ func Test_NestedVariableIsReadEnvironmentIntoed(t *testing.T) {
 
 func Test_UnsetRequiredVariableErrors(t *testing.T) {
 	conf := struct {
-		UnsetRequiredVar string `envRequired:"true"`
+		UnsetRequiredVar string `env:"required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -50,7 +50,7 @@ func Test_SetRequiredVariableReadEnvironmentIntoWithoutError(t *testing.T) {
 	defer os.Unsetenv("REQUIRED_VAR")
 
 	conf := struct {
-		RequiredVar string `envRequired:"true"`
+		RequiredVar string `env:"required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -63,7 +63,7 @@ func Test_DefaultValueOverridden(t *testing.T) {
 
 	conf := struct {
 		Default struct {
-			KeyExists string `envDefault:"DEFAULT"`
+			KeyExists string `env:"${:-DEFAULT}"`
 		}
 	}{}
 
@@ -78,7 +78,7 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 	defer os.Unsetenv("DEFAULT_KEY_IS_EMPTY_STRING")
 
 	conf := struct {
-		defaultKeyIsEmptyString string `envDefault:"EMPTY"`
+		defaultKeyIsEmptyString string `env:"${:-EMPTY}"`
 	}{}
 
 	LoadEnvironment().Into(&conf)
@@ -88,8 +88,8 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 
 func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 	conf := struct {
-		DefaultKeySet string `envDefault:"DEFAULT"`
-		DefaultBool   bool   `envDefault:"true"`
+		DefaultKeySet string `env:"${:-DEFAULT}"`
+		DefaultBool   bool   `env:"${:-true}"`
 	}{}
 
 	LoadEnvironment().Into(&conf)
@@ -100,7 +100,7 @@ func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {
 
 func Test_RequiredWithDefaultDoesNotErrorWhenNotSet(t *testing.T) {
 	conf := struct {
-		RequiredWithDefault string `env:"required" envDefault:"DEFAULT"`
+		RequiredWithDefault string `env:"${:-DEFAULT},required"`
 	}{}
 
 	err := LoadEnvironment().Into(&conf)
@@ -144,4 +144,73 @@ func ExampleLoadEnvironment() {
 	// Import "encoding/json" to pretty print:
 	// jsonString, _ := json.Marshal(&conf)
 	// log.Info(string(jsonString))
+}
+
+func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {
+	conf := struct {
+		RequiredValue string `envOpts:"required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+}
+
+func Test_LoadRequiredFieldWithValueSucceeds(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("REQUIRED_VALUE", expected)
+
+	conf := struct {
+		RequiredValue string `env:"required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, conf.RequiredValue)
+}
+
+// func Test_LoadRequiredFieldWithoutValueFails(t *testing.T) {
+// 	conf := struct {
+// 		RequiredValue string `env:"required"`
+// 	}{}
+
+// 	err := LoadEnvironment().Into(&conf)
+// 	assert.NotNil(t, err)
+// }
+
+// func Test_LoadRequiredFieldWithDefaultValueSucceeds(t *testing.T) {
+// 	conf := struct {
+// 		RequiredValue string `env:"${:-DEFAULT_VALUE},required"`
+// 	}{}
+
+// 	err := LoadEnvironment().Into(&conf)
+// 	assert.Nil(t, err)
+// 	assert.Equal(t, "DEFAULT_VALUE", conf.RequiredValue)
+// }
+
+func TestLoadingFieldWithOverrideNameLoads(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("SomeOtherFieldName", expected)
+
+	conf := struct {
+		Field string `env:"${SomeOtherFieldName}"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, conf.Field)
+}
+
+func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
+	expected := "PASSED"
+	os.Setenv("SomeOtherFieldName", expected)
+
+	conf := struct {
+		Field string `env:"${SomeOtherFieldName},required"`
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, conf.Field)
 }

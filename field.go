@@ -17,7 +17,13 @@ func isZeroValue(v reflect.Value) bool {
 	)
 }
 
+func isZeroOfUnderlyingType(x interface{}) bool {
+	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
+}
+
 func getEnvValueForField(field reflect.StructField, key string) (string, error) {
+	// tagSet := newTagSet(tags)
+
 	value := os.Getenv(key)
 	isSet := len(value) > 0
 
@@ -40,7 +46,11 @@ func getEnvValueForField(field reflect.StructField, key string) (string, error) 
 	return value, nil
 }
 
-func setField(rawValue string, v reflect.Value) error {
+func setField(rawValue string, v reflect.Value, defaultValue string) error {
+	if rawValue == "" {
+		rawValue = defaultValue
+	}
+
 	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)

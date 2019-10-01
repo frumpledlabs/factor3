@@ -51,6 +51,8 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	var key string
+	var defaultValue string
+
 	key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
 	key = macroCaser.Replace(key)
 
@@ -59,6 +61,10 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	if exists {
 		if ts.keyIsOverriden {
 			key = ts.overrideKey
+		}
+
+		if ts.hasDefaultValue {
+			defaultValue = ts.defaultValue
 		}
 	}
 
@@ -69,7 +75,7 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	if isZeroValue(field) {
-		err = setField(envValue, field)
+		err = setField(envValue, field, defaultValue)
 		if err != nil {
 			return err
 		}

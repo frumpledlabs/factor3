@@ -75,6 +75,14 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 	}
 
 	if isZeroValue(field) {
+		if envValue == "" {
+			envValue = defaultValue
+		}
+
+		if envValue == "" && ts.isRequired {
+			return errors.New("required field not set")
+		}
+
 		err = setField(envValue, field, defaultValue)
 		if err != nil {
 			return err
@@ -98,12 +106,6 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 		value.Set(field)
 		readEnvironmentInto(key, reference.Interface())
 		field.Set(value)
-
-		// case reflect.String:
-		// 	if ts.isRequired {
-		// 		println("Valid:", field.IsValid())
-		// 		return errors.New("required field not set")
-		// 	}
 	}
 
 	return nil

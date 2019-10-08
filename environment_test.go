@@ -181,3 +181,18 @@ func Test_GivenInvalidInput_ThenErrorIsReturnedWhenLoadingVariables(t *testing.T
 		}{})
 	assert.NotNil(t, err)
 }
+
+func Test_EndToEnd(t *testing.T) {
+	os.Setenv("APP_EXAMPLE_DEFINED_VAR", "PASSED")
+
+	conf := struct {
+		UndefinedVar string `env:"${UNDEFINED_VAR:-Default value used}"`
+		// DefinedVar   string `env:"${DEFINED_VAR:-Default value used},required"`
+		// RequiredVar  string `env:"required"`
+	}{}
+
+	LoadEnvironment().
+		Debug().
+		WithVariablePrefix("APP_EXAMPLE").
+		Into(&conf)
+}

@@ -4,6 +4,9 @@ import (
 	"regexp"
 )
 
+const varNameKey = ""
+const defaultValueKey = "defaultValue"
+
 type varMatch struct {
 	varName      string
 	defaultValue string
@@ -12,15 +15,15 @@ type varMatch struct {
 func newMatchVar(input string) varMatch {
 	matches := parseToMap(input)
 	vm := varMatch{
-		varName:      matches["name"],
-		defaultValue: matches["default"],
+		varName:      matches[varNameKey],
+		defaultValue: matches[defaultValueKey],
 	}
 
 	return vm
 }
 
 func parseToMap(input string) map[string]string {
-	r := regexp.MustCompile(`\${(?P<name>.*)(?::-)(?P<default>.*)}`)
+	r := regexp.MustCompile(`\${(?P<` + varNameKey + `>.*)(?::-)(?P<` + defaultValueKey + `>.*)}`)
 	match := r.FindStringSubmatch(input)
 	paramsMap := make(map[string]string)
 	for i, name := range r.SubexpNames() {

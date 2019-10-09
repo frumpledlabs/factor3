@@ -4,26 +4,26 @@ import (
 	"regexp"
 )
 
-const varNameKey = ""
+const varNameKey = "variableName"
 const defaultValueKey = "defaultValue"
 
-type varMatch struct {
+type envVarDefinition struct {
 	varName      string
 	defaultValue string
 }
 
-func newMatchVar(input string) varMatch {
+func newEnvVarDefinition(input string) envVarDefinition {
 	matches := parseToMap(input)
-	vm := varMatch{
+	definition := envVarDefinition{
 		varName:      matches[varNameKey],
 		defaultValue: matches[defaultValueKey],
 	}
 
-	return vm
+	return definition
 }
 
 func parseToMap(input string) map[string]string {
-	r := regexp.MustCompile(`\${(?P<` + varNameKey + `>.*)(?::-)(?P<` + defaultValueKey + `>.*)}`)
+	r := regexp.MustCompile(`^\${(?P<` + varNameKey + `>[A-z_-]*)(?::-)?(?P<` + defaultValueKey + `>.*)}`)
 	match := r.FindStringSubmatch(input)
 	paramsMap := make(map[string]string)
 	for i, name := range r.SubexpNames() {

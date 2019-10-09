@@ -13,7 +13,7 @@ func Test_FieldDataRecognizesBuiltinTags(t *testing.T) {
 	assert.True(t, fieldData.isRequired)
 }
 
-func Test_OverrideValueIsParsed(t *testing.T) {
+func Test_OverrideKeyIsParsed(t *testing.T) {
 	input := `${SOMETHING_ELSE},required`
 	fieldData := newFieldData(input)
 

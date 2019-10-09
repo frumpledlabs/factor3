@@ -107,77 +107,96 @@ func Test_LoadVariablesOfAllSupportedTypesWithoutError(t *testing.T) {
 }
 
 func Test_GivenInvalidInput_ThenErrorIsReturnedWhenLoadingVariables(t *testing.T) {
-	os.Setenv("BOOL_VAR", "trueeeee")
-	os.Setenv("FLOAT32_VAR", "thirty-two")
-	os.Setenv("FLOAT64_VAR", "sixty-four")
-	os.Setenv("INT_VAR", "1.1")
-	os.Setenv("INT8_VAR", "8.1")
-	os.Setenv("INT16_VAR", "16.1")
-	os.Setenv("INT32_VAR", "32.1")
-	os.Setenv("INT64_VAR", "64.1")
+	type testCase struct {
+		envVarName  string
+		envVarValue string
+		testStruct  *interface{}
+	}
 
-	defer os.Unsetenv("BOOL_VAR")
-	defer os.Unsetenv("FLOAT32_VAR")
-	defer os.Unsetenv("FLOAT64_VAR")
-	defer os.Unsetenv("INT_VAR")
-	defer os.Unsetenv("INT8_VAR")
-	defer os.Unsetenv("INT16_VAR")
-	defer os.Unsetenv("INT32_VAR")
-	defer os.Unsetenv("INT64_VAR")
+	testCases := []struct {
+		envVarName  string
+		envVarValue string
+		testStruct  interface{}
+	}{
+		{
+			envVarName:  "BOOL_VAR",
+			envVarValue: "not a bool",
+			testStruct: &struct {
+				BoolVar bool
+			}{},
+		},
+		{
+			envVarName:  "FLOAT32_VAR",
+			envVarValue: "not-float-32",
+			testStruct: &struct {
+				Float32Var float32
+			}{},
+		},
+		{
+			envVarName:  "FLOAT64_VAR",
+			envVarValue: "sixty-four",
+			testStruct: &struct {
+				Float64Var float64
+			}{},
+		},
+		{
+			envVarName:  "INT_VAR",
+			envVarValue: "43.2",
+			testStruct: &struct {
+				IntVar int
+			}{},
+		},
+		{
+			envVarName:  "INT8_VAR",
+			envVarValue: "543.2",
+			testStruct: &struct {
+				Int8Var int8
+			}{},
+		},
+		{
+			envVarName:  "INT16_VAR",
+			envVarValue: "32.1",
+			testStruct: &struct {
+				Int16Var int16
+			}{},
+		},
+		{
+			envVarName:  "INT32_VAR",
+			envVarValue: "32.1",
+			testStruct: &struct {
+				Int32Var int32
+			}{},
+		},
+		{
+			envVarName:  "INT64_VAR",
+			envVarValue: "64.1",
+			testStruct: &struct {
+				Int64Var int64
+			}{},
+		},
+	}
 
-	var err error
+	for _, tc := range testCases {
+		os.Setenv(tc.envVarName, tc.envVarValue)
+		defer os.Unsetenv(tc.envVarName)
 
-	err = LoadEnvironment().
-		Into(&struct {
-			BoolVar bool
-		}{})
-	assert.NotNil(t, err)
+		err := LoadEnvironment().
+			Into(tc.testStruct)
+		assert.NotNil(t, err)
+	}
+}
 
-	err = LoadEnvironment().
-		Into(&struct {
-			Float32Var float32
-		}{})
-	assert.NotNil(t, err)
+func Test_EndToEnd(t *testing.T) {
+	os.Setenv("APP_EXAMPLE_DEFINED_VAR", "PASSED")
 
-	err = LoadEnvironment().
-		Into(&struct {
-			Float64Var float64
-		}{})
-	assert.NotNil(t, err)
+	conf := struct {
+		UndefinedVar string `env:"${UNDEFINED_VAR:-Default value used}"`
+		// DefinedVar   string `env:"${DEFINED_VAR:-Default value used},required"`
+		// RequiredVar  string `env:"required"`
+	}{}
 
-	err = LoadEnvironment().
-		Into(&struct {
-			IntVar int
-		}{})
-	assert.NotNil(t, err)
-
-	err = LoadEnvironment().
-		Into(&struct {
-			Int8Var int8
-		}{})
-	assert.NotNil(t, err)
-
-	err = LoadEnvironment().
-		Into(&struct {
-			Int16Var int16
-		}{})
-	assert.NotNil(t, err)
-
-	err = LoadEnvironment().
-		Into(&struct {
-			Int32Var int32
-		}{})
-	assert.NotNil(t, err)
-
-	err = LoadEnvironment().
-		Into(&struct {
-			Int64Var int64
-		}{})
-	assert.NotNil(t, err)
-
-	err = LoadEnvironment().
-		Into(&struct {
-			BoolVar bool
-		}{})
-	assert.NotNil(t, err)
+	LoadEnvironment().
+		Debug().
+		WithVariablePrefix("APP_EXAMPLE").
+		Into(&conf)
 }

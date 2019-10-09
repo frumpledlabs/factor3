@@ -7,7 +7,7 @@ import (
 
 const labelIsRequired = "required"
 
-var valuesDefinitionPattern = regexp.MustCompile(`\${.*(:-)?.*}`)
+var envVariablePattern = regexp.MustCompile(`\${.*(?::-)?.*}`)
 
 type fieldData struct {
 	definition      string
@@ -35,38 +35,27 @@ func newFieldData(input string) fieldData {
 }
 
 func (fd *fieldData) parseValuesDefinition() {
-	valueDefinition := strings.Split(fd.definition, ",")[0]
-
-	if !valuesDefinitionPattern.MatchString(valueDefinition) {
+	values := strings.Split(fd.definition, ",")
+	if len(values) == 0 {
 		return
 	}
 
-	valueDefinition = strings.TrimLeft(valueDefinition, "${")
-	valueDefinition = strings.TrimRight(valueDefinition, "}")
+	value := values[0]
+	values = values[1:]
 
-	valuesDefinition := strings.TrimLeft(valueDefinition, ".*:-")
-
-	values := strings.Split(valuesDefinition, ",")
-
-	hasPrefix := regexp.MustCompile(".+:-").
-		MatchString(valueDefinition)
-	if !hasPrefix {
-		hasPrefix = !strings.Contains(valueDefinition, ":-") && valueDefinition != ""
+	if !envVariablePattern.MatchString(value) {
+		return
 	}
 
-	hasSuffix := regexp.MustCompile(":-.+").MatchString(valueDefinition)
+	envVarDefinition := newEnvVarDefinition(value)
 
-	if hasPrefix {
-		override := values[0]
-		override = strings.TrimRight(override, ":-")
-		fd.overrideKey = override
+	if envVarDefinition.varName != "" {
+		fd.overrideKey = envVarDefinition.varName
 		fd.keyIsOverriden = true
-
-		values = values[1:]
 	}
 
-	if hasSuffix {
-		fd.defaultValue = values[0]
+	if envVarDefinition.defaultValue != "" {
+		fd.defaultValue = envVarDefinition.defaultValue
 		fd.hasDefaultValue = true
 	}
 }

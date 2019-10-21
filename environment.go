@@ -20,6 +20,7 @@ func (e environment) WithVariablePrefix(environmentVariablePrefix string) enviro
 		map[string]interface{}{
 			"prefix": environmentVariablePrefix,
 		})
+
 	return e
 }
 
@@ -32,8 +33,31 @@ func (e environment) Into(configStruct interface{}) error {
 	)
 }
 
-func (e environment) Debug() environment {
+// Debug reads the struct and logs the fields it finds with the sources for values it will use for each field.
+func (e environment) Debug(configStruct interface{}) {
 	log.WithLevel(logger.DebugLevel)
 
-	return e
+	output, err := parseEnvironmentToMap(
+		e.variablePrefix,
+		configStruct,
+	)
+
+	if err != nil {
+		log.Fatal(
+			"Error debugging struct",
+			map[string]interface{}{
+				"msg": err,
+			},
+		)
+	}
+
+	for key, value := range output {
+		log.Debug(
+			"",
+			map[string]interface{}{
+				"key":   key,
+				"value": value,
+			},
+		)
+	}
 }

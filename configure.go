@@ -113,3 +113,13 @@ func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.Struc
 
 	return nil
 }
+
+func parseEnvironmentToMap(
+	prefix string,
+	input interface{},
+) (map[string]string, error) {
+	var err error
+	debugMap := make(map[string]string)
+
+	return debugMap, err
+}

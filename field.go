@@ -102,17 +102,3 @@ func setField(rawValue string, v reflect.Value) error {
 
 	return nil
 }
-
-//func printKeys(key string, v reflect.Value, vType reflect.StructField) {
-//	switch v.Kind() {
-//	case reflect.Ptr:
-//		setFieldFromEnv(key, v.Elem(), vType)
-//	case reflect.Struct:
-//		reference := reflect.New(v.Type())
-//		value := reference.Elem()
-//
-//		value.Set(v)
-//		ReadEnvironmentInto("", reference.Interface())
-//		v.Set(value)
-//	}
-//}

@@ -21,7 +21,6 @@ func main() {
 
 	factor3.
 		LoadEnvironment().
-		Debug().
 		WithVariablePrefix("APP_EXAMPLE").
 		Into(&conf)
 

@@ -50,7 +50,7 @@ func setField(rawValue string, v reflect.Value) error {
 			return err
 		}
 		v.Set(reflect.ValueOf(value).Convert(v.Type()))
-		println("value:", value)
+		println("setField::value:", value)
 	case reflect.Float32:
 		value, err := strconv.ParseFloat(rawValue, 32)
 		if err != nil {

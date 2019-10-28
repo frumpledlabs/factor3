@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type fieldInfo struct {
@@ -28,21 +29,26 @@ func debugFieldAndEnvironment(
 		return fields, err
 	}
 
-	for i := 0; i < inputType.NumField(); i++ {
+	keyPrefix := prefix
+	if !strings.HasPrefix(keyPrefix, ".") {
+		keyPrefix = ""
+	}
 
+	for i := 0; i < inputType.NumField(); i++ {
 		field := inputValue.Field(i)
 		fieldType := inputType.Field(i)
-		name := fmt.Sprintf(
+		key := fmt.Sprintf(
 			"%s.%s",
-			prefix,
+			keyPrefix,
 			inputType.Field(i).Name,
 		)
 
 		switch field.Kind() {
 		case reflect.Struct:
-			reference := reflect.New(field.Type())
-
-			structFields, err := debugFieldAndEnvironment(name, reference.Interface())
+			structFields, err := debugFieldAndEnvironment(
+				key,
+				reflect.New(field.Type()).Interface(),
+			)
 			for _, field := range structFields {
 				fields[field.Key] = field
 			}
@@ -51,9 +57,9 @@ func debugFieldAndEnvironment(
 				return fields, err
 			}
 		default:
-			fieldInfo, err := debugFieldFromEnv(
+			fieldInfo, err := debugGetFieldData(
 				prefix,
-				name,
+				key,
 				field,
 				fieldType,
 			)
@@ -62,7 +68,7 @@ func debugFieldAndEnvironment(
 				return fields, err
 			}
 
-			fields[name] = fieldInfo
+			fields[fieldInfo.Key] = fieldInfo
 		}
 	}
 
@@ -73,6 +79,11 @@ func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {
 	if fieldType.Kind() != reflect.Struct {
 		return errors.New("Expected a struct")
 	}
+
+	return validateFieldCanBeSet(fieldValue)
+}
+
+func validateFieldCanBeSet(fieldValue reflect.Value) error {
 	if !fieldValue.CanSet() {
 		return errors.New("Field cannot be set")
 	}
@@ -80,65 +91,39 @@ func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {
 	return nil
 }
 
-func validateField(fieldValue reflect.Value) error {
-	if !fieldValue.CanSet() {
-		return errors.New("Field cannot be set")
-	}
-
-	return nil
-}
-
-func debugFieldFromEnv(
+func debugGetFieldData(
 	prefix string,
 	name string,
 	fieldValue reflect.Value,
 	fieldType reflect.StructField,
 ) (fieldInfo, error) {
 	var err error
-	var defaultValue string
-	var fieldInfo fieldInfo
 
-	err = validateField(fieldValue)
+	fieldInfo := fieldInfo{
+		Key: name,
+	}
+
+	err = validateFieldCanBeSet(fieldValue)
 	if err != nil {
 		return fieldInfo, err
 	}
 
-	fieldInfo.Key = name
-
 	envVar := fmt.Sprintf("%s_%s", prefix, name)
 	envVar = macroCaser.Replace(envVar)
 
-	tagDefinition, tagDefinitionExists := fieldType.Tag.Lookup(tagEnvName)
-	var fieldData fieldData
+	println("PREFIX:", prefix)
+	println(envVar)
 
-	if tagDefinitionExists {
-		fieldData = newFieldData(tagDefinition)
+	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
+	fieldData := newFieldData(tagDefinition)
 
-		fieldInfo.EnvironmentVariable = ""
-		if fieldData.keyIsOverriden {
-			fieldInfo.EnvironmentVariable = fieldData.overrideKey
-		}
-
-		if fieldData.hasDefaultValue {
-			defaultValue = fieldData.defaultValue
-			fieldInfo.DefaultValue = defaultValue
-		}
+	fieldInfo.EnvironmentVariable = envVar
+	if fieldData.keyIsOverriden {
+		fieldInfo.EnvironmentVariable = fieldData.overrideKey
 	}
 
-	if isZeroValue(fieldValue) {
-		// TODO: Calculate actual value for field...
-		// if envValue == "" {
-		// 	envValue = defaultValue
-		// }
-
-		// if envValue == "" && fieldData.isRequired {
-		// 	return fieldInfo, errors.New("required field not set")
-		// }
-
-		// err = debugSetField(name, envValue, fieldValue)
-		// if err != nil {
-		// 	return fieldInfo, err
-		// }
+	if fieldData.hasDefaultValue {
+		fieldInfo.DefaultValue = fieldData.defaultValue
 	}
 
 	return fieldInfo, nil

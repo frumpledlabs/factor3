@@ -12,7 +12,7 @@ import (
 func Test_debug(t *testing.T) {
 	overrideSetKey := "OVERRIDE_SET"
 	overrideSetValue := "Passed - Override Set"
-	defaultValue := "Passed - Default Value Used"
+	defaultValue := "Default Value Used"
 	overrideUnsetKey := "OVERRIDE_UNSET"
 
 	os.Setenv(overrideSetKey, overrideSetValue)
@@ -24,15 +24,15 @@ func Test_debug(t *testing.T) {
 		OverridenField string `env:"${OVERRIDE_SET}"`
 		Embedded       struct {
 			Field                           string
-			FieldWithDefault                string `env:"${:-Passed - Default Value Used}"`
-			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Passed - Default Value Used}"`
-			SetOverriddenFieldWithDefault   string `env:"${OVERRIDE_SET:-Failed - Default value shouldn't be used}"`
+			FieldWithDefault                string `env:"${:-Default Value Used}"`
+			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Default Value Used}"`
+			SetOverriddenFieldWithDefault   string `env:"${OVERRIDE_SET:-Default Value Used}"`
 		}
 	}{}
 
 	expectedOutput := map[string]fieldInfo{
 		".PlainField": fieldInfo{
-			EnvironmentVariable: "",
+			EnvironmentVariable: "PREFIX_PLAIN_FIELD",
 			DefaultValue:        "",
 			CalculatedRawValue:  "",
 		},
@@ -42,12 +42,12 @@ func Test_debug(t *testing.T) {
 			CalculatedRawValue:  overrideSetValue,
 		},
 		".Embedded.Field": fieldInfo{
-			EnvironmentVariable: "",
+			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD",
 			DefaultValue:        "",
 			CalculatedRawValue:  "",
 		},
 		".Embedded.FieldWithDefault": fieldInfo{
-			EnvironmentVariable: "",
+			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD_WITH_DEFAULT",
 			DefaultValue:        defaultValue,
 			CalculatedRawValue:  "",
 		},
@@ -64,7 +64,7 @@ func Test_debug(t *testing.T) {
 	}
 
 	var output map[string]fieldInfo
-	output, err := debugFieldAndEnvironment("", &input)
+	output, err := debugFieldAndEnvironment("PREFIX", &input)
 	require.Nil(t, err)
 
 	assert.Len(t, output, 6)
@@ -87,5 +87,7 @@ func Test_debug(t *testing.T) {
 			expectedOutput[key].DefaultValue,
 			value.DefaultValue,
 		)
+
+		println(key, ":", value.EnvironmentVariable)
 	}
 }

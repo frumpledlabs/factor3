@@ -57,7 +57,7 @@ func debugFieldAndEnvironment(
 				return fields, err
 			}
 		default:
-			fieldInfo, err := debugGetFieldData(
+			fieldInfo, err := debugReadField(
 				prefix,
 				key,
 				field,
@@ -91,7 +91,7 @@ func validateFieldCanBeSet(fieldValue reflect.Value) error {
 	return nil
 }
 
-func debugGetFieldData(
+func debugReadField(
 	prefix string,
 	name string,
 	fieldValue reflect.Value,

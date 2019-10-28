@@ -4,18 +4,19 @@ import (
 	"github.com/frumpled/factor3/logger"
 )
 
-type environment struct {
+// Environment accumulates meta-data used to populate input with values when loading
+type Environment struct {
 	variablePrefix string
 	fields         map[string]fieldInfo
 }
 
 // LoadEnvironment initializes the environemnt w/ default configuration
-func LoadEnvironment() environment {
-	return environment{}
+func LoadEnvironment() Environment {
+	return Environment{}
 }
 
-// Set a prefix to use when fetchnig environment variables
-func (e environment) WithVariablePrefix(environmentVariablePrefix string) environment {
+// WithVariablePrefix sets a prefix used when defining default environment variables
+func (e Environment) WithVariablePrefix(environmentVariablePrefix string) Environment {
 	e.variablePrefix = environmentVariablePrefix
 	log.Info("Using environment variable prefix.",
 		map[string]interface{}{
@@ -27,7 +28,7 @@ func (e environment) WithVariablePrefix(environmentVariablePrefix string) enviro
 
 // Into reads local environment into this "environment" instance
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
-func (e environment) Into(input interface{}) error {
+func (e Environment) Into(input interface{}) error {
 
 	e.readFields(input)
 	// setFields(input, e.fields)
@@ -39,7 +40,7 @@ func (e environment) Into(input interface{}) error {
 }
 
 // Debug reads the struct and logs the fields it finds with the sources for values it will use for each field.
-func (e environment) Debug(input interface{}) {
+func (e Environment) Debug(input interface{}) {
 	log.WithLevel(logger.DebugLevel)
 
 	e.readFields(input)
@@ -55,7 +56,7 @@ func (e environment) Debug(input interface{}) {
 	}
 }
 
-func (e environment) readFields(input interface{}) {
+func (e Environment) readFields(input interface{}) {
 	fields, err := readEnvironmentFor(
 		e.variablePrefix,
 		input,

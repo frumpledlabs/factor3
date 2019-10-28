@@ -24,7 +24,7 @@ func debugFieldAndEnvironment(
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
 
-	err := validateFieldInfo(inputType, inputValue)
+	err := validateInput(inputType, inputValue)
 	if err != nil {
 		return fields, err
 	}
@@ -33,7 +33,11 @@ func debugFieldAndEnvironment(
 
 		field := inputValue.Field(i)
 		fieldType := inputType.Field(i)
-		name := inputType.Field(i).Name
+		name := fmt.Sprintf(
+			"%s.%s",
+			prefix,
+			inputType.Field(i).Name,
+		)
 
 		switch field.Kind() {
 		case reflect.Ptr:
@@ -53,7 +57,7 @@ func debugFieldAndEnvironment(
 		default:
 			fieldInfo, err := debugFieldFromEnv(
 				prefix,
-				"",
+				name,
 				field,
 				fieldType,
 			)
@@ -62,41 +66,35 @@ func debugFieldAndEnvironment(
 				return fields, err
 			}
 
-			fields[fieldInfo.Key] = fieldInfo
+			fields[name] = fieldInfo
 		}
 	}
 
 	return fields, nil
 }
 
-func validateFieldInfo(inputType reflect.Type, input reflect.Value) error {
-	var err error
-
-	if inputType.Kind() != reflect.Struct {
-		err = errors.New("Expected a struct")
-		log.Error(
-			"Error in debugEnvironmentInto()",
-			map[string]interface{}{
-				"msg": err.Error(),
-			},
-		)
+func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {
+	if fieldType.Kind() != reflect.Struct {
+		return errors.New("Expected a struct")
+	}
+	if !fieldValue.CanSet() {
+		return errors.New("Field cannot be set")
 	}
 
-	return err
+	return nil
 }
 
 func validateField(fieldValue reflect.Value) error {
-	var err error
 	if !fieldValue.CanSet() {
-		err = errors.New("field cannot be set")
+		return errors.New("Field cannot be set")
 	}
 
-	return err
+	return nil
 }
 
 func debugFieldFromEnv(
 	prefix string,
-	envVar string,
+	name string,
 	fieldValue reflect.Value,
 	fieldType reflect.StructField,
 ) (fieldInfo, error) {
@@ -104,7 +102,6 @@ func debugFieldFromEnv(
 	var err error
 	var defaultValue string
 	var envVarOverride string
-
 	var fieldInfo fieldInfo
 
 	err = validateField(fieldValue)
@@ -112,11 +109,9 @@ func debugFieldFromEnv(
 		return fieldInfo, err
 	}
 
-	key := fmt.Sprintf("%s.%s", envVar, fieldType.Name)
+	fieldInfo.Key = name
 
-	fieldInfo.Key = key
-
-	envVar = fmt.Sprintf("%s_%s", envVar, fieldType.Name)
+	envVar := fmt.Sprintf("%s_%s", name, fieldType.Name)
 	envVar = macroCaser.Replace(envVar)
 
 	tagDefinition, tagDefinitionExists := fieldType.Tag.Lookup(tagEnvName)
@@ -126,7 +121,7 @@ func debugFieldFromEnv(
 		fieldData = newFieldData(tagDefinition)
 		if fieldData.keyIsOverriden {
 			envVarOverride = fieldData.overrideKey
-			fieldInfo.EnvironmentVariable = key
+			fieldInfo.EnvironmentVariable = envVar
 			println("Override key:", envVarOverride)
 		}
 
@@ -137,7 +132,7 @@ func debugFieldFromEnv(
 	}
 
 	var envValue string
-	envValue, err = debugEnvValueForField(fieldType, key)
+	envValue, err = debugEnvValueForField(fieldType, fieldInfo.EnvironmentVariable)
 	if err != nil {
 		return fieldInfo, err
 	}
@@ -151,7 +146,7 @@ func debugFieldFromEnv(
 			return fieldInfo, errors.New("required field not set")
 		}
 
-		err = debugSetField(key, envValue, fieldValue)
+		err = debugSetField(name, envValue, fieldValue)
 		if err != nil {
 			return fieldInfo, err
 		}

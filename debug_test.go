@@ -32,32 +32,32 @@ func Test_debug(t *testing.T) {
 	}{}
 
 	expectedOutput := map[string]fieldInfo{
-		"PlainField": fieldInfo{
+		".PlainField": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        "",
 			CalculatedValue:     "",
 		},
-		"OverridenField": fieldInfo{
+		".OverridenField": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
 			DefaultValue:        "",
 			CalculatedValue:     overrideSetValue,
 		},
-		"Embedded.Field": fieldInfo{
+		".Embedded.Field": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        "",
 			CalculatedValue:     "",
 		},
-		"Embedded.DefaultValueField": fieldInfo{
+		".Embedded.DefaultValueField": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        defaultValue,
 			CalculatedValue:     "",
 		},
-		"Embedded.UnsetOverriddenFieldWithDefault": fieldInfo{
+		".Embedded.UnsetOverriddenFieldWithDefault": fieldInfo{
 			EnvironmentVariable: overrideUnsetKey,
 			DefaultValue:        defaultValue,
 			CalculatedValue:     defaultValue,
 		},
-		"Embedded.SetOverriddenFieldWithDefault": fieldInfo{
+		".Embedded.SetOverriddenFieldWithDefault": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
 			DefaultValue:        defaultValue,
 			CalculatedValue:     overrideSetValue,
@@ -71,7 +71,21 @@ func Test_debug(t *testing.T) {
 	// assert.NotEqual(t, input, prefix)
 	assert.NotEqual(t, output, expectedOutput)
 
+	for key := range output {
+		println(key)
+	}
+
 	assert.Len(t, output, 6)
+
+	for key := range expectedOutput {
+		_, exists := output[key]
+		assert.True(t, exists, key)
+	}
+
+	for key := range output {
+		println(key)
+	}
+
 	// for key, value := range output {
 	// 	// assert.Equal(
 	// 	// 	t, value.CalculatedValue, expectedOutput[key].CalculatedValue,

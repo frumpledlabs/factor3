@@ -3,7 +3,6 @@ package factor3
 import (
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 )
@@ -12,7 +11,7 @@ type fieldInfo struct {
 	Key                 string
 	EnvironmentVariable string
 	DefaultValue        string
-	CalculatedValue     interface{}
+	CalculatedRawValue  interface{}
 }
 
 func debugFieldAndEnvironment(
@@ -40,9 +39,6 @@ func debugFieldAndEnvironment(
 		)
 
 		switch field.Kind() {
-		case reflect.Ptr:
-			println("Pointer field found o_o")
-			debugFieldFromEnv(prefix, name, field.Elem(), fieldType)
 		case reflect.Struct:
 			reference := reflect.New(field.Type())
 
@@ -98,10 +94,8 @@ func debugFieldFromEnv(
 	fieldValue reflect.Value,
 	fieldType reflect.StructField,
 ) (fieldInfo, error) {
-
 	var err error
 	var defaultValue string
-	var envVarOverride string
 	var fieldInfo fieldInfo
 
 	err = validateField(fieldValue)
@@ -111,7 +105,7 @@ func debugFieldFromEnv(
 
 	fieldInfo.Key = name
 
-	envVar := fmt.Sprintf("%s_%s", name, fieldType.Name)
+	envVar := fmt.Sprintf("%s_%s", prefix, name)
 	envVar = macroCaser.Replace(envVar)
 
 	tagDefinition, tagDefinitionExists := fieldType.Tag.Lookup(tagEnvName)
@@ -119,10 +113,10 @@ func debugFieldFromEnv(
 
 	if tagDefinitionExists {
 		fieldData = newFieldData(tagDefinition)
+
+		fieldInfo.EnvironmentVariable = ""
 		if fieldData.keyIsOverriden {
-			envVarOverride = fieldData.overrideKey
-			fieldInfo.EnvironmentVariable = envVar
-			println("Override key:", envVarOverride)
+			fieldInfo.EnvironmentVariable = fieldData.overrideKey
 		}
 
 		if fieldData.hasDefaultValue {
@@ -131,56 +125,23 @@ func debugFieldFromEnv(
 		}
 	}
 
-	var envValue string
-	envValue, err = debugEnvValueForField(fieldType, fieldInfo.EnvironmentVariable)
-	if err != nil {
-		return fieldInfo, err
-	}
-
 	if isZeroValue(fieldValue) {
-		if envValue == "" {
-			envValue = defaultValue
-		}
+		// TODO: Calculate actual value for field...
+		// if envValue == "" {
+		// 	envValue = defaultValue
+		// }
 
-		if envValue == "" && fieldData.isRequired {
-			return fieldInfo, errors.New("required field not set")
-		}
+		// if envValue == "" && fieldData.isRequired {
+		// 	return fieldInfo, errors.New("required field not set")
+		// }
 
-		err = debugSetField(name, envValue, fieldValue)
-		if err != nil {
-			return fieldInfo, err
-		}
+		// err = debugSetField(name, envValue, fieldValue)
+		// if err != nil {
+		// 	return fieldInfo, err
+		// }
 	}
 
 	return fieldInfo, nil
-}
-
-func debugEnvValueForField(field reflect.StructField, key string) (string, error) {
-	var err error
-
-	value := os.Getenv(key)
-	isSet := len(value) > 0
-
-	if !isSet {
-		value = field.Tag.Get("envDefault")
-		isSet = len(value) > 0
-	}
-
-	isRequired := false
-	isRequiredValue := field.Tag.Get("envRequired")
-	if isRequiredValue != "" {
-		isRequired, err = strconv.ParseBool(isRequiredValue)
-		if err != nil {
-			// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
-			return "", err
-		}
-	}
-
-	if isRequired && !isSet {
-		return value, errors.New("No value set for required key: " + key)
-	}
-
-	return value, nil
 }
 
 func debugSetField(key string, rawValue string, v reflect.Value) error {

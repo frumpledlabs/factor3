@@ -1,7 +1,6 @@
 package factor3
 
 import (
-	// "fmt"
 	"os"
 
 	"testing"
@@ -13,7 +12,7 @@ import (
 func Test_debug(t *testing.T) {
 	overrideSetKey := "OVERRIDE_SET"
 	overrideSetValue := "Passed - Override Set"
-	defaultValue := "Default Value Used"
+	defaultValue := "Passed - Default Value Used"
 	overrideUnsetKey := "OVERRIDE_UNSET"
 
 	os.Setenv(overrideSetKey, overrideSetValue)
@@ -25,8 +24,8 @@ func Test_debug(t *testing.T) {
 		OverridenField string `env:"${OVERRIDE_SET}"`
 		Embedded       struct {
 			Field                           string
-			DefaultValueField               string `env:"${:-Passed Default Value}"`
-			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Passed - Default Value}"`
+			FieldWithDefault                string `env:"${:-Passed - Default Value Used}"`
+			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Passed - Default Value Used}"`
 			SetOverriddenFieldWithDefault   string `env:"${OVERRIDE_SET:-Failed - Default value shouldn't be used}"`
 		}
 	}{}
@@ -35,45 +34,38 @@ func Test_debug(t *testing.T) {
 		".PlainField": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        "",
-			CalculatedValue:     "",
+			CalculatedRawValue:  "",
 		},
 		".OverridenField": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
 			DefaultValue:        "",
-			CalculatedValue:     overrideSetValue,
+			CalculatedRawValue:  overrideSetValue,
 		},
 		".Embedded.Field": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        "",
-			CalculatedValue:     "",
+			CalculatedRawValue:  "",
 		},
-		".Embedded.DefaultValueField": fieldInfo{
+		".Embedded.FieldWithDefault": fieldInfo{
 			EnvironmentVariable: "",
 			DefaultValue:        defaultValue,
-			CalculatedValue:     "",
+			CalculatedRawValue:  "",
 		},
 		".Embedded.UnsetOverriddenFieldWithDefault": fieldInfo{
 			EnvironmentVariable: overrideUnsetKey,
 			DefaultValue:        defaultValue,
-			CalculatedValue:     defaultValue,
+			CalculatedRawValue:  defaultValue,
 		},
 		".Embedded.SetOverriddenFieldWithDefault": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
 			DefaultValue:        defaultValue,
-			CalculatedValue:     overrideSetValue,
+			CalculatedRawValue:  overrideSetValue,
 		},
 	}
 
 	var output map[string]fieldInfo
 	output, err := debugFieldAndEnvironment("", &input)
 	require.Nil(t, err)
-
-	// assert.NotEqual(t, input, prefix)
-	assert.NotEqual(t, output, expectedOutput)
-
-	for key := range output {
-		println(key)
-	}
 
 	assert.Len(t, output, 6)
 
@@ -82,19 +74,18 @@ func Test_debug(t *testing.T) {
 		assert.True(t, exists, key)
 	}
 
-	for key := range output {
-		println(key)
+	for key, value := range output {
+		assert.Equal(t,
+			expectedOutput[key].EnvironmentVariable,
+			value.EnvironmentVariable,
+		)
+		// assert.Equal(t,
+		// 	value.CalculatedRawValue,
+		// 	expectedOutput[key].CalculatedRawValue,
+		// )
+		assert.Equal(t,
+			expectedOutput[key].DefaultValue,
+			value.DefaultValue,
+		)
 	}
-
-	// for key, value := range output {
-	// 	// assert.Equal(
-	// 	// 	t, value.CalculatedValue, expectedOutput[key].CalculatedValue,
-	// 	// )
-	// 	assert.Equal(
-	// 		t, value.DefaultValue, expectedOutput[key].DefaultValue,
-	// 	)
-	// 	// assert.Equal(
-	// 	// 	t, value.EnvironmentVariable, expectedOutput[key].EnvironmentVariable,
-	// 	// )
-	// }
 }

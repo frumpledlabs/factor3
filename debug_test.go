@@ -37,7 +37,7 @@ func Test_debug(t *testing.T) {
 		".PlainField": fieldInfo{
 			EnvironmentVariable: "PREFIX_PLAIN_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  "",
+			CalculatedRawValue:  nil,
 		},
 		".OverridenField": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
@@ -47,12 +47,12 @@ func Test_debug(t *testing.T) {
 		".Embedded.Field": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  "",
+			CalculatedRawValue:  nil,
 		},
 		".Embedded.FieldWithDefault": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD_WITH_DEFAULT",
 			DefaultValue:        defaultValue,
-			CalculatedRawValue:  "",
+			CalculatedRawValue:  defaultValue,
 		},
 		".Embedded.UnsetOverriddenFieldWithDefault": fieldInfo{
 			EnvironmentVariable: overrideUnsetKey,
@@ -67,7 +67,7 @@ func Test_debug(t *testing.T) {
 		".Embedded.Deeply.NestedField": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_DEEPLY_NESTED_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  "",
+			CalculatedRawValue:  nil,
 		},
 	}
 
@@ -91,10 +91,10 @@ func Test_debug(t *testing.T) {
 			expectedOutput[key].EnvironmentVariable,
 			value.EnvironmentVariable,
 		)
-		// assert.Equal(t,
-		// 	value.CalculatedRawValue,
-		// 	expectedOutput[key].CalculatedRawValue,
-		// )
+		assert.Equal(t,
+			expectedOutput[key].CalculatedRawValue,
+			value.CalculatedRawValue,
+		)
 		assert.Equal(t,
 			expectedOutput[key].DefaultValue,
 			value.DefaultValue,

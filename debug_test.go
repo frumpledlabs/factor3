@@ -27,6 +27,9 @@ func Test_debug(t *testing.T) {
 			FieldWithDefault                string `env:"${:-Default Value Used}"`
 			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Default Value Used}"`
 			SetOverriddenFieldWithDefault   string `env:"${OVERRIDE_SET:-Default Value Used}"`
+			Deep                            struct {
+				Field string
+			}
 		}
 	}{}
 
@@ -61,13 +64,18 @@ func Test_debug(t *testing.T) {
 			DefaultValue:        defaultValue,
 			CalculatedRawValue:  overrideSetValue,
 		},
+		// ".Embedded.Deep.Field": fieldInfo{
+		// 	EnvironmentVariable: "PREFIX_EMBEDDED_DEEP_FIELD",
+		// 	DefaultValue:        "",
+		// 	CalculatedRawValue:  "",
+		// },
 	}
 
 	var output map[string]fieldInfo
-	output, err := debugReadStruct("PREFIX", &input)
+	output, err := debugReadEnvironmentInto("PREFIX", &input)
 	require.Nil(t, err)
 
-	assert.Len(t, output, 6)
+	assert.Len(t, output, 7)
 
 	for key := range expectedOutput {
 		_, exists := output[key]
@@ -91,7 +99,5 @@ func Test_debug(t *testing.T) {
 			expectedOutput[key].DefaultValue,
 			value.DefaultValue,
 		)
-
-		println(key, ":", value.EnvironmentVariable)
 	}
 }

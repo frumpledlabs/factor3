@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 type fieldInfo struct {
@@ -15,7 +14,7 @@ type fieldInfo struct {
 	CalculatedRawValue  interface{}
 }
 
-func debugReadStruct(
+func debugReadEnvironmentInto(
 	prefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
@@ -29,26 +28,16 @@ func debugReadStruct(
 		return fields, err
 	}
 
-	keyPrefix := prefix
-	if !strings.HasPrefix(keyPrefix, ".") {
-		keyPrefix = ""
-	}
-	println("Struct:\t", prefix, "\t>\t", keyPrefix)
-
 	for i := 0; i < inputType.NumField(); i++ {
 		field := inputValue.Field(i)
 		fieldType := inputType.Field(i)
+		fieldName := inputType.Field(i).Name
 
 		switch field.Kind() {
 		case reflect.Struct:
-			key := fmt.Sprintf(
-				"%s.%s",
-				keyPrefix,
-				inputType.Field(i).Name,
-			)
-
 			structFields, err := debugReadStruct(
-				key,
+				prefix,
+				"."+fieldName,
 				reflect.New(field.Type()).Interface(),
 			)
 			for _, field := range structFields {
@@ -61,7 +50,63 @@ func debugReadStruct(
 		default:
 			fieldInfo, err := debugReadField(
 				prefix,
-				inputType.Field(i).Name,
+				"",
+				fieldName,
+				field,
+				fieldType,
+			)
+
+			if err != nil {
+				return fields, err
+			}
+
+			fields[fieldInfo.Key] = fieldInfo
+		}
+	}
+
+	return fields, nil
+}
+
+func debugReadStruct(
+	envPrefix string,
+	keyPrefix string,
+	input interface{},
+) (map[string]fieldInfo, error) {
+	fields := make(map[string]fieldInfo)
+
+	inputValue := reflect.ValueOf(input).Elem()
+	inputType := inputValue.Type()
+
+	err := validateInput(inputType, inputValue)
+	if err != nil {
+		return fields, err
+	}
+
+	for i := 0; i < inputType.NumField(); i++ {
+		field := inputValue.Field(i)
+		fieldType := inputType.Field(i)
+		fieldName := inputType.Field(i).Name
+
+		switch field.Kind() {
+		case reflect.Struct:
+
+			structFields, err := debugReadStruct(
+				envPrefix,
+				keyPrefix,
+				reflect.New(field.Type()).Interface(),
+			)
+			for _, field := range structFields {
+				fields[field.Key] = field
+			}
+
+			if err != nil {
+				return fields, err
+			}
+		default:
+			fieldInfo, err := debugReadField(
+				envPrefix,
+				keyPrefix,
+				fieldName,
 				field,
 				fieldType,
 			)
@@ -94,19 +139,16 @@ func validateFieldCanBeSet(fieldValue reflect.Value) error {
 }
 
 func debugReadField(
-	prefix string,
+	envPrefix string,
+	keyPrefix string,
 	name string,
 	fieldValue reflect.Value,
 	fieldType reflect.StructField,
 ) (fieldInfo, error) {
 	var err error
 
-	if !strings.HasPrefix(prefix, ".") {
-		prefix = ""
-	}
-
 	fieldInfo := fieldInfo{
-		Key: fmt.Sprintf("%s.%s", prefix, name),
+		Key: fmt.Sprintf("%s.%s", keyPrefix, name),
 	}
 
 	err = validateFieldCanBeSet(fieldValue)
@@ -114,7 +156,7 @@ func debugReadField(
 		return fieldInfo, err
 	}
 
-	envVar := fmt.Sprintf("%s_%s", prefix, name)
+	envVar := fmt.Sprintf("%s_%s_%s", envPrefix, keyPrefix, name)
 	envVar = macroCaser.Replace(envVar)
 
 	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)

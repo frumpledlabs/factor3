@@ -89,6 +89,11 @@ func debugReadStruct(
 
 		switch field.Kind() {
 		case reflect.Struct:
+			keyPrefix = fmt.Sprintf(
+				"%s.%s",
+				keyPrefix,
+				fieldName,
+			)
 
 			structFields, err := debugReadStruct(
 				envPrefix,
@@ -116,6 +121,7 @@ func debugReadStruct(
 			}
 
 			fields[fieldInfo.Key] = fieldInfo
+
 		}
 	}
 

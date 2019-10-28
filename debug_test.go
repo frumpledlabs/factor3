@@ -27,8 +27,8 @@ func Test_debug(t *testing.T) {
 			FieldWithDefault                string `env:"${:-Default Value Used}"`
 			UnsetOverriddenFieldWithDefault string `env:"${OVERRIDE_UNSET:-Default Value Used}"`
 			SetOverriddenFieldWithDefault   string `env:"${OVERRIDE_SET:-Default Value Used}"`
-			Deep                            struct {
-				Field string
+			Deeply                          struct {
+				NestedField string
 			}
 		}
 	}{}
@@ -64,11 +64,11 @@ func Test_debug(t *testing.T) {
 			DefaultValue:        defaultValue,
 			CalculatedRawValue:  overrideSetValue,
 		},
-		// ".Embedded.Deep.Field": fieldInfo{
-		// 	EnvironmentVariable: "PREFIX_EMBEDDED_DEEP_FIELD",
-		// 	DefaultValue:        "",
-		// 	CalculatedRawValue:  "",
-		// },
+		".Embedded.Deeply.NestedField": fieldInfo{
+			EnvironmentVariable: "PREFIX_EMBEDDED_DEEPLY_NESTED_FIELD",
+			DefaultValue:        "",
+			CalculatedRawValue:  "",
+		},
 	}
 
 	var output map[string]fieldInfo
@@ -82,9 +82,9 @@ func Test_debug(t *testing.T) {
 		assert.True(t, exists, key)
 	}
 
-	for key := range output {
-		println("TEST:", key)
-	}
+	// for key := range output {
+	// 	println("TEST:", key)
+	// }
 
 	for key, value := range output {
 		assert.Equal(t,

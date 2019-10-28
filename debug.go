@@ -15,33 +15,58 @@ type fieldInfo struct {
 	CalculatedValue     interface{}
 }
 
-func debugEnvironmentInto(
+func debugFieldAndEnvironment(
 	prefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
-	output := make(map[string]fieldInfo)
+	fields := make(map[string]fieldInfo)
 
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
 
 	err := validateFieldInfo(inputType, inputValue)
 	if err != nil {
-		return output, err
+		return fields, err
 	}
 
 	for i := 0; i < inputType.NumField(); i++ {
+
+		field := inputValue.Field(i)
+		fieldType := inputType.Field(i)
 		name := inputType.Field(i).Name
-		println("prefix:", prefix, "-", name)
-		fields, err := debugFieldFromEnv(prefix, "", inputValue.Field(i), inputType.Field(i))
-		if err != nil {
-			return output, err
-		}
-		for key, fieldInfo := range fields {
-			output[key] = fieldInfo
+
+		switch field.Kind() {
+		case reflect.Ptr:
+			println("Pointer field found o_o")
+			debugFieldFromEnv(prefix, name, field.Elem(), fieldType)
+		case reflect.Struct:
+			reference := reflect.New(field.Type())
+
+			structFields, err := debugFieldAndEnvironment(name, reference.Interface())
+			for _, field := range structFields {
+				fields[field.Key] = field
+			}
+
+			if err != nil {
+				return fields, err
+			}
+		default:
+			fieldInfo, err := debugFieldFromEnv(
+				prefix,
+				"",
+				field,
+				fieldType,
+			)
+
+			if err != nil {
+				return fields, err
+			}
+
+			fields[fieldInfo.Key] = fieldInfo
 		}
 	}
 
-	return output, nil
+	return fields, nil
 }
 
 func validateFieldInfo(inputType reflect.Type, input reflect.Value) error {
@@ -60,47 +85,34 @@ func validateFieldInfo(inputType reflect.Type, input reflect.Value) error {
 	return err
 }
 
+func validateField(fieldValue reflect.Value) error {
+	var err error
+	if !fieldValue.CanSet() {
+		err = errors.New("field cannot be set")
+	}
+
+	return err
+}
+
 func debugFieldFromEnv(
 	prefix string,
 	envVar string,
-	field reflect.Value,
+	fieldValue reflect.Value,
 	fieldType reflect.StructField,
-) (map[string]fieldInfo, error) {
+) (fieldInfo, error) {
 
 	var err error
 	var defaultValue string
 	var envVarOverride string
 
-	fields := make(map[string]fieldInfo)
 	var fieldInfo fieldInfo
 
-	if !field.CanSet() {
-		log.Error("Field cannot be set.",
-			map[string]interface{}{
-				"field": field,
-			},
-		)
-
-		return fields, errors.New("field cannot be set")
+	err = validateField(fieldValue)
+	if err != nil {
+		return fieldInfo, err
 	}
 
 	key := fmt.Sprintf("%s.%s", envVar, fieldType.Name)
-	println("key:", key)
-
-	switch field.Kind() {
-	case reflect.Ptr:
-		println("Pointer field found o_o")
-		debugFieldFromEnv(prefix, key, field.Elem(), fieldType)
-	case reflect.Struct:
-		reference := reflect.New(field.Type())
-
-		fields, err := debugEnvironmentInto(key, reference.Interface())
-		for key, field := range fields {
-			fields[key] = field
-		}
-
-		return fields, err
-	}
 
 	fieldInfo.Key = key
 
@@ -115,7 +127,6 @@ func debugFieldFromEnv(
 		if fieldData.keyIsOverriden {
 			envVarOverride = fieldData.overrideKey
 			fieldInfo.EnvironmentVariable = key
-			println("key:", key)
 			println("Override key:", envVarOverride)
 		}
 
@@ -128,41 +139,25 @@ func debugFieldFromEnv(
 	var envValue string
 	envValue, err = debugEnvValueForField(fieldType, key)
 	if err != nil {
-		return fields, err
+		return fieldInfo, err
 	}
 
-	println("key:", key)
-
-	if isZeroValue(field) {
+	if isZeroValue(fieldValue) {
 		if envValue == "" {
 			envValue = defaultValue
 		}
 
 		if envValue == "" && fieldData.isRequired {
-			return fields, errors.New("required field not set")
+			return fieldInfo, errors.New("required field not set")
 		}
 
-		err = debugField(key, envValue, field)
+		err = debugSetField(key, envValue, fieldValue)
 		if err != nil {
-			return fields, err
+			return fieldInfo, err
 		}
-
-		log.Debug(
-			"Set field value.",
-			map[string]interface{}{
-				"field":    fieldType.Name,
-				"variable": key,
-			},
-		)
 	}
 
-	fields[key] = fieldInfo
-
-	for key := range fields {
-		println("KEY:", key)
-	}
-
-	return fields, nil
+	return fieldInfo, nil
 }
 
 func debugEnvValueForField(field reflect.StructField, key string) (string, error) {
@@ -188,13 +183,12 @@ func debugEnvValueForField(field reflect.StructField, key string) (string, error
 	return value, nil
 }
 
-func debugField(key string, rawValue string, v reflect.Value) error {
-
-	if v.Kind() != reflect.Struct && (v.Kind() != reflect.Ptr) {
-		println(key, ":", rawValue)
-	}
-
+func debugSetField(key string, rawValue string, v reflect.Value) error {
 	switch v.Kind() {
+	case reflect.Struct:
+		// return errors.New("Cannot set field value on type reflect.Struct")
+	case reflect.Ptr:
+		// return errors.New("Cannot set field value on type reflect.Ptr")
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)
 		if err != nil {
@@ -245,10 +239,6 @@ func debugField(key string, rawValue string, v reflect.Value) error {
 		v.Set(reflect.ValueOf(value).Convert(v.Type()))
 	case reflect.String:
 		v.Set(reflect.ValueOf(rawValue).Convert(v.Type()))
-	case reflect.Struct:
-		v.Set(reflect.New(v.Type()).Elem())
-	case reflect.Ptr:
-		v.Set(reflect.New(v.Type().Elem()))
 	}
 
 	return nil

@@ -150,7 +150,6 @@ func ExampleLoadEnvironment() {
 	}{}
 
 	LoadEnvironment().Into(&conf)
-	// println(conf)
 
 	// Import "encoding/json" to pretty print:
 	// jsonString, _ := json.Marshal(&conf)

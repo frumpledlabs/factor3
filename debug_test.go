@@ -65,7 +65,7 @@ func Test_debug(t *testing.T) {
 	}
 
 	var output map[string]fieldInfo
-	output, err := debugEnvironmentInto("", &input)
+	output, err := debugFieldAndEnvironment("", &input)
 	require.Nil(t, err)
 
 	// assert.NotEqual(t, input, prefix)

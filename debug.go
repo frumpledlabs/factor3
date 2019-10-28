@@ -15,7 +15,7 @@ type fieldInfo struct {
 	CalculatedRawValue  interface{}
 }
 
-func debugFieldAndEnvironment(
+func debugReadStruct(
 	prefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
@@ -33,19 +33,21 @@ func debugFieldAndEnvironment(
 	if !strings.HasPrefix(keyPrefix, ".") {
 		keyPrefix = ""
 	}
+	println("Struct:\t", prefix, "\t>\t", keyPrefix)
 
 	for i := 0; i < inputType.NumField(); i++ {
 		field := inputValue.Field(i)
 		fieldType := inputType.Field(i)
-		key := fmt.Sprintf(
-			"%s.%s",
-			keyPrefix,
-			inputType.Field(i).Name,
-		)
 
 		switch field.Kind() {
 		case reflect.Struct:
-			structFields, err := debugFieldAndEnvironment(
+			key := fmt.Sprintf(
+				"%s.%s",
+				keyPrefix,
+				inputType.Field(i).Name,
+			)
+
+			structFields, err := debugReadStruct(
 				key,
 				reflect.New(field.Type()).Interface(),
 			)
@@ -59,7 +61,7 @@ func debugFieldAndEnvironment(
 		default:
 			fieldInfo, err := debugReadField(
 				prefix,
-				key,
+				inputType.Field(i).Name,
 				field,
 				fieldType,
 			)
@@ -99,8 +101,12 @@ func debugReadField(
 ) (fieldInfo, error) {
 	var err error
 
+	if !strings.HasPrefix(prefix, ".") {
+		prefix = ""
+	}
+
 	fieldInfo := fieldInfo{
-		Key: name,
+		Key: fmt.Sprintf("%s.%s", prefix, name),
 	}
 
 	err = validateFieldCanBeSet(fieldValue)
@@ -110,9 +116,6 @@ func debugReadField(
 
 	envVar := fmt.Sprintf("%s_%s", prefix, name)
 	envVar = macroCaser.Replace(envVar)
-
-	println("PREFIX:", prefix)
-	println(envVar)
 
 	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
 	fieldData := newFieldData(tagDefinition)

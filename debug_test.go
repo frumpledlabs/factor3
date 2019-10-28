@@ -64,7 +64,7 @@ func Test_debug(t *testing.T) {
 	}
 
 	var output map[string]fieldInfo
-	output, err := debugFieldAndEnvironment("PREFIX", &input)
+	output, err := debugReadStruct("PREFIX", &input)
 	require.Nil(t, err)
 
 	assert.Len(t, output, 6)
@@ -72,6 +72,10 @@ func Test_debug(t *testing.T) {
 	for key := range expectedOutput {
 		_, exists := output[key]
 		assert.True(t, exists, key)
+	}
+
+	for key := range output {
+		println("TEST:", key)
 	}
 
 	for key, value := range output {

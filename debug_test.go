@@ -72,7 +72,7 @@ func Test_debug(t *testing.T) {
 	}
 
 	var output map[string]fieldInfo
-	output, err := debugReadEnvironmentInto("PREFIX", &input)
+	output, err := readEnvironmentFor("PREFIX", &input)
 	require.Nil(t, err)
 
 	assert.Len(t, output, 7)

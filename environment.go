@@ -6,6 +6,7 @@ import (
 
 type environment struct {
 	variablePrefix string
+	fields         map[string]fieldInfo
 }
 
 // LoadEnvironment initializes the environemnt w/ default configuration
@@ -26,37 +27,47 @@ func (e environment) WithVariablePrefix(environmentVariablePrefix string) enviro
 
 // Into reads local environment into this "environment" instance
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
-func (e environment) Into(configStruct interface{}) error {
+func (e environment) Into(input interface{}) error {
+
+	e.readFields(input)
+	// setFields(input, e.fields)
+
 	return readEnvironmentInto(
 		e.variablePrefix,
-		configStruct,
+		input,
 	)
 }
 
 // Debug reads the struct and logs the fields it finds with the sources for values it will use for each field.
-func (e environment) Debug(configStruct interface{}) {
+func (e environment) Debug(input interface{}) {
 	log.WithLevel(logger.DebugLevel)
 
-	output, err := parseEnvironmentToMap(
-		e.variablePrefix,
-		configStruct,
-	)
+	e.readFields(input)
 
-	if err != nil {
-		log.Fatal(
-			"Error debugging struct",
-			map[string]interface{}{
-				"msg": err,
-			},
-		)
-	}
-
-	for key, value := range output {
+	for key, value := range e.fields {
 		log.Debug(
 			"",
 			map[string]interface{}{
 				"key":   key,
 				"value": value,
+			},
+		)
+	}
+}
+
+func (e environment) readFields(input interface{}) {
+	fields, err := readEnvironmentFor(
+		e.variablePrefix,
+		input,
+	)
+
+	e.fields = fields
+
+	if err != nil {
+		log.Fatal(
+			"Error reading fields",
+			map[string]interface{}{
+				"msg": err.Error(),
 			},
 		)
 	}

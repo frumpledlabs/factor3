@@ -8,6 +8,12 @@ import (
 	"strconv"
 )
 
+// TODO:  Replace environment file w/ this
+// TODO:  Rename this to not have debug in name
+// TODO:  Refactor repeated code blocks in here
+// TODO:  Add debug flag to determine whether to set value or not
+// TODO:  Add debug logging (flaggable on/off feature) for all fields found w/ this app
+
 type fieldInfo struct {
 	FieldValue          reflect.Value
 	Key                 string      `json:"key"`
@@ -16,7 +22,7 @@ type fieldInfo struct {
 	CalculatedRawValue  interface{} `json:"calculated_raw_value"`
 }
 
-func debugReadEnvironmentInto(
+func readEnvironmentFor(
 	prefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
@@ -25,9 +31,8 @@ func debugReadEnvironmentInto(
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
 
-	err := validateInput(inputType, inputValue)
-	if err != nil {
-		return fields, err
+	if inputType.Kind() != reflect.Struct {
+		return fields, errors.New("Expected a struct")
 	}
 
 	for i := 0; i < inputType.NumField(); i++ {
@@ -165,8 +170,9 @@ func debugReadField(
 		return fieldInfo, err
 	}
 
-	envVar := fmt.Sprintf("%s_%s_%s", envPrefix, keyPrefix, name)
-	envVar = macroCaser.Replace(envVar)
+	envVar := macroCaser.Replace(
+		fmt.Sprintf("%s_%s_%s", envPrefix, keyPrefix, name),
+	)
 
 	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
 	fieldData := newFieldData(tagDefinition)

@@ -79,12 +79,12 @@ func Test_DefaultValueIsOveriddenWhenEmptyValueSet(t *testing.T) {
 	defer os.Unsetenv("DEFAULT_KEY_IS_EMPTY_STRING")
 
 	conf := struct {
-		defaultKeyIsEmptyString string `env:"${:-EMPTY}"`
+		DefaultKeyIsEmptyString string `env:"${:-Default Value}"`
 	}{}
 
 	LoadEnvironment().Into(&conf)
 
-	assert.Equal(t, "", conf.defaultKeyIsEmptyString)
+	assert.Equal(t, "Default Value", conf.DefaultKeyIsEmptyString)
 }
 
 func Test_DefaultValuePersistsWhenEnvVariableNotSet(t *testing.T) {

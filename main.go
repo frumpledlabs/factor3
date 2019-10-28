@@ -10,6 +10,4 @@ func init() {
 	log = logger.
 		New().
 		WithLevel(logger.InfoLevel)
-
-	// log.Info("initializing logger", nil)
 }

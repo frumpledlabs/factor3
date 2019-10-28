@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strconv"
 )
 
 // TODO:  Replace environment file w/ this
 // TODO:  Rename this to not have debug in name
-// TODO:  Refactor repeated code blocks in here
 // TODO:  Add debug flag to determine whether to set value or not
 // TODO:  Add debug logging (flaggable on/off feature) for all fields found w/ this app
 
@@ -22,7 +20,7 @@ type fieldInfo struct {
 	CalculatedRawValue  interface{} `json:"calculated_raw_value"`
 }
 
-func readEnvironmentFor(
+func loadFieldsFromEnvironmentFor(
 	prefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
@@ -55,7 +53,7 @@ func readEnvironmentFor(
 				return fields, err
 			}
 		default:
-			fieldInfo, err := debugReadField(
+			fieldInfo, err := readField(
 				prefix,
 				"",
 				fieldName,
@@ -115,7 +113,7 @@ func debugReadStruct(
 				return fields, err
 			}
 		default:
-			fieldInfo, err := debugReadField(
+			fieldInfo, err := readField(
 				envPrefix,
 				keyPrefix,
 				fieldName,
@@ -135,23 +133,7 @@ func debugReadStruct(
 	return fields, nil
 }
 
-func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {
-	if fieldType.Kind() != reflect.Struct {
-		return errors.New("Expected a struct")
-	}
-
-	return validateFieldCanBeSet(fieldValue)
-}
-
-func validateFieldCanBeSet(fieldValue reflect.Value) error {
-	if !fieldValue.CanSet() {
-		return errors.New("Field cannot be set")
-	}
-
-	return nil
-}
-
-func debugReadField(
+func readField(
 	envPrefix string,
 	keyPrefix string,
 	name string,
@@ -195,62 +177,17 @@ func debugReadField(
 	return fieldInfo, nil
 }
 
-func debugSetField(key string, rawValue string, v reflect.Value) error {
-	switch v.Kind() {
-	case reflect.Struct:
-		// return errors.New("Cannot set field value on type reflect.Struct")
-	case reflect.Ptr:
-		// return errors.New("Cannot set field value on type reflect.Ptr")
-	case reflect.Bool:
-		value, err := strconv.ParseBool(rawValue)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(value).Convert(v.Type()))
-	case reflect.Float32:
-		value, err := strconv.ParseFloat(rawValue, 32)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(float32(value)).Convert(v.Type()))
-	case reflect.Float64:
-		value, err := strconv.ParseFloat(rawValue, 64)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(value).Convert(v.Type()))
-	case reflect.Int:
-		value, err := strconv.ParseInt(rawValue, 10, 64)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(int(value)).Convert(v.Type()))
-	case reflect.Int8:
-		value, err := strconv.ParseInt(rawValue, 10, 8)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(int8(value)).Convert(v.Type()))
-	case reflect.Int16:
-		value, err := strconv.ParseInt(rawValue, 10, 16)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(int16(value)).Convert(v.Type()))
-	case reflect.Int32:
-		value, err := strconv.ParseInt(rawValue, 10, 32)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(int32(value)).Convert(v.Type()))
-	case reflect.Int64:
-		value, err := strconv.ParseInt(rawValue, 10, 64)
-		if err != nil {
-			return err
-		}
-		v.Set(reflect.ValueOf(value).Convert(v.Type()))
-	case reflect.String:
-		v.Set(reflect.ValueOf(rawValue).Convert(v.Type()))
+func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {
+	if fieldType.Kind() != reflect.Struct {
+		return errors.New("Expected a struct")
+	}
+
+	return validateFieldCanBeSet(fieldValue)
+}
+
+func validateFieldCanBeSet(fieldValue reflect.Value) error {
+	if !fieldValue.CanSet() {
+		return errors.New("Field cannot be set")
 	}
 
 	return nil

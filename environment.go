@@ -30,7 +30,7 @@ func (e Environment) WithVariablePrefix(environmentVariablePrefix string) Enviro
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
 func (e Environment) Into(input interface{}) error {
 
-	e.readFields(input)
+	e.loadFields(input)
 	// setFields(input, e.fields)
 
 	return readEnvironmentInto(
@@ -43,7 +43,7 @@ func (e Environment) Into(input interface{}) error {
 func (e Environment) Debug(input interface{}) {
 	log.WithLevel(logger.DebugLevel)
 
-	e.readFields(input)
+	e.loadFields(input)
 
 	for key, value := range e.fields {
 		log.Debug(
@@ -56,8 +56,8 @@ func (e Environment) Debug(input interface{}) {
 	}
 }
 
-func (e Environment) readFields(input interface{}) {
-	fields, err := readEnvironmentFor(
+func (e Environment) loadFields(input interface{}) {
+	fields, err := loadFieldsFromEnvironmentFor(
 		e.variablePrefix,
 		input,
 	)

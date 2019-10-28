@@ -156,6 +156,8 @@ func debugFieldFromEnv(
 }
 
 func debugEnvValueForField(field reflect.StructField, key string) (string, error) {
+	var err error
+
 	value := os.Getenv(key)
 	isSet := len(value) > 0
 
@@ -164,11 +166,14 @@ func debugEnvValueForField(field reflect.StructField, key string) (string, error
 		isSet = len(value) > 0
 	}
 
+	isRequired := false
 	isRequiredValue := field.Tag.Get("envRequired")
-	isRequired, err := strconv.ParseBool(isRequiredValue)
-	if err != nil {
-		// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
-		isRequired = false
+	if isRequiredValue != "" {
+		isRequired, err = strconv.ParseBool(isRequiredValue)
+		if err != nil {
+			// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
+			return "", err
+		}
 	}
 
 	if isRequired && !isSet {

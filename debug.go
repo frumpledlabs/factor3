@@ -3,6 +3,7 @@ package factor3
 import (
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 )
@@ -168,13 +169,15 @@ func debugReadField(
 	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
 	fieldData := newFieldData(tagDefinition)
 
+	if fieldData.hasDefaultValue {
+		fieldInfo.DefaultValue = fieldData.defaultValue
+		fieldInfo.CalculatedRawValue = fieldData.defaultValue
+	}
+
 	fieldInfo.EnvironmentVariable = envVar
 	if fieldData.keyIsOverriden {
 		fieldInfo.EnvironmentVariable = fieldData.overrideKey
-	}
-
-	if fieldData.hasDefaultValue {
-		fieldInfo.DefaultValue = fieldData.defaultValue
+		fieldInfo.CalculatedRawValue = os.Getenv(fieldInfo.EnvironmentVariable)
 	}
 
 	return fieldInfo, nil

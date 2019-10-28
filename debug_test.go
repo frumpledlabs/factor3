@@ -90,14 +90,17 @@ func Test_debug(t *testing.T) {
 		assert.Equal(t,
 			expectedOutput[key].EnvironmentVariable,
 			value.EnvironmentVariable,
+			key,
 		)
 		assert.Equal(t,
 			expectedOutput[key].CalculatedRawValue,
 			value.CalculatedRawValue,
+			key,
 		)
 		assert.Equal(t,
 			expectedOutput[key].DefaultValue,
 			value.DefaultValue,
+			key,
 		)
 	}
 }

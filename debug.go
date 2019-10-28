@@ -24,10 +24,10 @@ func debugEnvironmentInto(
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
 
-	// err := validateFieldInfo(inputType, inputValue)
-	// if err != nil {
-	// 	return output, err
-	// }
+	err := validateFieldInfo(inputType, inputValue)
+	if err != nil {
+		return output, err
+	}
 
 	for i := 0; i < inputType.NumField(); i++ {
 		name := inputType.Field(i).Name
@@ -44,21 +44,21 @@ func debugEnvironmentInto(
 	return output, nil
 }
 
-// func validateFieldInfo(inputType reflect.Type, input reflect.Value) error {
-// 	var err error
-// 	if (reflect.TypeOf(input).Kind() != reflect.Ptr) ||
-// 		(inputType.Kind() != reflect.Struct) {
-// 		err = errors.New("Expected a struct pointer")
-// 		log.Error(
-// 			"Error in debugEnvironmentInto()",
-// 			map[string]interface{}{
-// 				"msg": err.Error(),
-// 			},
-// 		)
-// 	}
+func validateFieldInfo(inputType reflect.Type, input reflect.Value) error {
+	var err error
 
-// 	return err
-// }
+	if inputType.Kind() != reflect.Struct {
+		err = errors.New("Expected a struct")
+		log.Error(
+			"Error in debugEnvironmentInto()",
+			map[string]interface{}{
+				"msg": err.Error(),
+			},
+		)
+	}
+
+	return err
+}
 
 func debugFieldFromEnv(
 	prefix string,

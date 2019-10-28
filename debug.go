@@ -177,7 +177,11 @@ func debugReadField(
 	fieldInfo.EnvironmentVariable = envVar
 	if fieldData.keyIsOverriden {
 		fieldInfo.EnvironmentVariable = fieldData.overrideKey
-		fieldInfo.CalculatedRawValue = os.Getenv(fieldInfo.EnvironmentVariable)
+		value, isSet := os.LookupEnv(fieldInfo.EnvironmentVariable)
+		if !isSet {
+			value = fieldInfo.DefaultValue
+		}
+		fieldInfo.CalculatedRawValue = value
 	}
 
 	return fieldInfo, nil

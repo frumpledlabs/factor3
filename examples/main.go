@@ -21,12 +21,14 @@ func main() {
 
 	err := factor3.
 		LoadEnvironment().
+		Debug().
 		WithVariablePrefix("APP_EXAMPLE").
 		Into(&conf)
 
 	if err != nil {
 		panic("Unexpected error")
 	}
+
 	// Pretty print the conf variable:
 	jsonString, _ := json.Marshal(&conf)
 	fmt.Println(string(jsonString))

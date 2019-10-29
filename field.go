@@ -77,8 +77,6 @@ func setFieldFromEnv(
 	}
 
 	switch field.Kind() {
-	case reflect.Ptr:
-		setFieldFromEnv(key, field.Elem(), fieldType)
 	case reflect.Struct:
 		reference := reflect.New(field.Type())
 		value := reference.Elem()
@@ -108,7 +106,7 @@ func setFieldFromEnv(
 			}
 
 			if envValue == "" && fieldData.isRequired {
-				return errors.New("required field not set")
+				return errors.New("Required field not set")
 			}
 
 			err = setFieldValue(envValue, field)
@@ -119,8 +117,8 @@ func setFieldFromEnv(
 			log.Debug(
 				"Set field value.",
 				map[string]interface{}{
-					"field":    fieldType.Name,
-					"variable": key,
+					"field": fieldType.Name,
+					"key":   key,
 				},
 			)
 		}

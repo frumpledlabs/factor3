@@ -1,5 +1,9 @@
 package factor3
 
+import (
+	"github.com/frumpled/factor3/logger"
+)
+
 // Environment accumulates meta-data used to populate field data into an input from the environment
 type Environment struct {
 	variablePrefix string
@@ -27,4 +31,11 @@ func (e Environment) Into(configStruct interface{}) error {
 		e.variablePrefix,
 		configStruct,
 	)
+}
+
+// Debug enables debug level logging
+func (e Environment) Debug() Environment {
+	log.WithLevel(logger.DebugLevel)
+
+	return e
 }

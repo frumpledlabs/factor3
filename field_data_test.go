@@ -33,16 +33,3 @@ func Test_OverrideValueIsParsedWithoutDefaultValue(t *testing.T) {
 
 	assert.Equal(t, "OVERRIDE", fieldData.overrideKey)
 }
-
-// func Test_MalformedInputsReturnError(t *testing.T) {
-// 	testInputs := []string{
-// 		`${A:B},required`, // invalid value/default separator
-// 		`{A}`,             // Missing leading $
-// 		`${:-},`,          // trailing comma / empty tag
-// 	}
-
-// 	for _, input := range testInputs {
-// 		_, err := newTagSet(input)
-// 		assert.Nil(t, err)
-// 	}
-// }

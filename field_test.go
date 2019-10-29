@@ -149,11 +149,6 @@ func ExampleLoadEnvironment() {
 	}{}
 
 	LoadEnvironment().Into(&conf)
-	// println(conf)
-
-	// Import "encoding/json" to pretty print:
-	// jsonString, _ := json.Marshal(&conf)
-	// log.Info(string(jsonString))
 }
 
 func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {
@@ -225,4 +220,23 @@ func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
 	err := LoadEnvironment().Into(&conf)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, conf.Field)
+}
+
+func TestDeeplyNestedFieldLoads(t *testing.T) {
+	expected := "PASSED"
+	envKey := "DEEPLY_NESTED_FIELD"
+	os.Setenv(envKey, expected)
+	defer os.Unsetenv(envKey)
+
+	conf := struct {
+		Deeply struct {
+			Nested struct {
+				Field string
+			}
+		}
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, conf.Deeply.Nested.Field)
 }

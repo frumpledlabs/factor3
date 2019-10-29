@@ -1,14 +1,131 @@
 package factor3
 
-// Check here for moar examples on reflect usage:
-//	https://github.com/a8m/reflect-examples#get-and-set-struct-fields
-
 import (
 	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"strconv"
 )
+
+const tagEnvName = "env"
+
+var macroCaser = newMacroCaseReplacer()
+
+// readEnvironmentInto environment into given configuration variable, using specific
+// tags to determine requirements, values, and behavior.
+func setFields(
+	prefix string,
+	input interface{},
+) error {
+	validateInput(input)
+
+	inputValue := reflect.ValueOf(input).Elem()
+	inputType := inputValue.Type()
+
+	for i := 0; i < inputType.NumField(); i++ {
+		err := setFieldFromEnv(prefix, inputValue.Field(i), inputType.Field(i))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateInput(input interface{}) {
+	inputType := reflect.ValueOf(input).Elem().Type()
+
+	if reflect.TypeOf(input).Kind() != reflect.Ptr {
+		log.Fatal("Expected a pointer as input", nil)
+	}
+
+	if inputType.Kind() != reflect.Struct {
+		log.Fatal("Expected a struct as input", nil)
+	}
+}
+
+func validateField(key string, fieldValue reflect.Value) error {
+	if !fieldValue.CanSet() {
+		log.Error("Field cannot be set.",
+			map[string]interface{}{
+				"field": key,
+			},
+		)
+
+		return errors.New("field cannot be set")
+	}
+
+	return nil
+}
+
+func setFieldFromEnv(
+	prefix string,
+	field reflect.Value,
+	fieldType reflect.StructField,
+) error {
+	var err error
+	var defaultValue string
+
+	key := macroCaser.Replace(
+		fmt.Sprintf("%s_%s", prefix, fieldType.Name),
+	)
+
+	err = validateField(key, field)
+	if err != nil {
+		return err
+	}
+
+	switch field.Kind() {
+	case reflect.Struct:
+		reference := reflect.New(field.Type())
+		value := reference.Elem()
+
+		value.Set(field)
+		setFields(key, reference.Interface())
+		field.Set(value)
+
+	default:
+		tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
+
+		fieldData := newFieldData(tagDefinition)
+		if fieldData.keyIsOverriden {
+			key = fieldData.overrideKey
+		}
+
+		if fieldData.hasDefaultValue {
+			defaultValue = fieldData.defaultValue
+		}
+
+		var envValue string
+		envValue, envValueIsSet := os.LookupEnv(key)
+
+		if isZeroValue(field) {
+			if !envValueIsSet {
+				envValue = defaultValue
+			}
+
+			if envValue == "" && fieldData.isRequired {
+				return errors.New("Required field not set")
+			}
+
+			err = setFieldValue(envValue, field)
+			if err != nil {
+				return err
+			}
+
+			log.Debug(
+				"Set field value.",
+				map[string]interface{}{
+					"field": fieldType.Name,
+					"key":   key,
+				},
+			)
+		}
+	}
+
+	return nil
+}
 
 func isZeroValue(v reflect.Value) bool {
 	return reflect.DeepEqual(
@@ -17,32 +134,7 @@ func isZeroValue(v reflect.Value) bool {
 	)
 }
 
-func getEnvValueForField(field reflect.StructField, key string) (string, error) {
-	// tagSet := newTagSet(tags)
-
-	value := os.Getenv(key)
-	isSet := len(value) > 0
-
-	if !isSet {
-		value = field.Tag.Get("envDefault")
-		isSet = len(value) > 0
-	}
-
-	isRequiredValue := field.Tag.Get("envRequired")
-	isRequired, err := strconv.ParseBool(isRequiredValue)
-	if err != nil {
-		// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
-		isRequired = false
-	}
-
-	if isRequired && !isSet {
-		return value, errors.New("No value set for required key: " + key)
-	}
-
-	return value, nil
-}
-
-func setField(rawValue string, v reflect.Value) error {
+func setFieldValue(rawValue string, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)
@@ -102,17 +194,3 @@ func setField(rawValue string, v reflect.Value) error {
 
 	return nil
 }
-
-//func printKeys(key string, v reflect.Value, vType reflect.StructField) {
-//	switch v.Kind() {
-//	case reflect.Ptr:
-//		setFieldFromEnv(key, v.Elem(), vType)
-//	case reflect.Struct:
-//		reference := reflect.New(v.Type())
-//		value := reference.Elem()
-//
-//		value.Set(v)
-//		ReadEnvironmentInto("", reference.Interface())
-//		v.Set(value)
-//	}
-//}

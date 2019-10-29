@@ -3,6 +3,7 @@ package factor3
 import (
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 )
 
@@ -16,16 +17,10 @@ func setFields(
 	prefix string,
 	input interface{},
 ) error {
-	if reflect.TypeOf(input).Kind() != reflect.Ptr {
-		return errors.New("expected a pointer")
-	}
+	validateInput(input)
 
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
-
-	if inputType.Kind() != reflect.Struct {
-		return errors.New("expected a struct")
-	}
 
 	for i := 0; i < inputType.NumField(); i++ {
 		err := setFieldFromEnv(prefix, inputValue.Field(i), inputType.Field(i))
@@ -37,47 +32,65 @@ func setFields(
 	return nil
 }
 
-func setFieldFromEnv(prefix string, field reflect.Value, fieldType reflect.StructField) error {
-	var err error
-	var exists bool
-	var key string
-	var defaultValue string
+func validateInput(input interface{}) {
+	inputType := reflect.ValueOf(input).Elem().Type()
 
-	if !field.CanSet() {
+	if reflect.TypeOf(input).Kind() != reflect.Ptr {
+		log.Fatal("Expected a pointer as input", nil)
+	}
+
+	if inputType.Kind() != reflect.Struct {
+		log.Fatal("Expected a struct as input", nil)
+	}
+}
+
+func validateField(key string, fieldValue reflect.Value) error {
+	if !fieldValue.CanSet() {
 		log.Error("Field cannot be set.",
 			map[string]interface{}{
-				"field": field,
+				"field": key,
 			},
 		)
 
 		return errors.New("field cannot be set")
 	}
 
-	key = fmt.Sprintf("%s_%s", prefix, fieldType.Name)
-	key = macroCaser.Replace(key)
+	return nil
+}
 
-	tagDefinition, exists := fieldType.Tag.Lookup(tagEnvName)
-	var fieldData fieldData
+func setFieldFromEnv(
+	prefix string,
+	field reflect.Value,
+	fieldType reflect.StructField,
+) error {
+	var err error
+	var defaultValue string
 
-	if exists {
-		fieldData = newFieldData(tagDefinition)
-		if fieldData.keyIsOverriden {
-			key = fieldData.overrideKey
-		}
+	key := macroCaser.Replace(
+		fmt.Sprintf("%s_%s", prefix, fieldType.Name),
+	)
 
-		if fieldData.hasDefaultValue {
-			defaultValue = fieldData.defaultValue
-		}
-	}
-
-	var envValue string
-	envValue, err = getEnvValueForField(fieldType, key)
+	err = validateField(key, field)
 	if err != nil {
 		return err
 	}
 
+	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
+
+	fieldData := newFieldData(tagDefinition)
+	if fieldData.keyIsOverriden {
+		key = fieldData.overrideKey
+	}
+
+	if fieldData.hasDefaultValue {
+		defaultValue = fieldData.defaultValue
+	}
+
+	var envValue string
+	envValue, envValueIsSet := os.LookupEnv(key)
+
 	if isZeroValue(field) {
-		if envValue == "" {
+		if !envValueIsSet {
 			envValue = defaultValue
 		}
 

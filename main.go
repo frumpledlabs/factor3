@@ -11,5 +11,5 @@ func init() {
 		New().
 		WithLevel(logger.InfoLevel)
 
-	// log.Info("initializing logger", nil)
+	// log.Info("Initializing env loader...", nil)
 }

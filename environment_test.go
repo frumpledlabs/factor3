@@ -192,7 +192,7 @@ func Test_EndToEnd(t *testing.T) {
 
 	conf := struct {
 		UndefinedVar string `env:"${UNDEFINED_VAR:-Default value used}"`
-		// DefinedVar   string `env:"${DEFINED_VAR:-Default value used},required"`
+		DefinedVar   string `env:"${DEFINED_VAR:-Default value used},required"`
 		// RequiredVar  string `env:"required"`
 	}{}
 

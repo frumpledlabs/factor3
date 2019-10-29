@@ -149,11 +149,6 @@ func ExampleLoadEnvironment() {
 	}{}
 
 	LoadEnvironment().Into(&conf)
-	// println(conf)
-
-	// Import "encoding/json" to pretty print:
-	// jsonString, _ := json.Marshal(&conf)
-	// log.Info(string(jsonString))
 }
 
 func TestLoadFieldWithoutRequiredValueFails(t *testing.T) {

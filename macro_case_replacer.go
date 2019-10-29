@@ -22,7 +22,7 @@ func newMacroCaseReplacer() macroCaseReplacer {
 	}
 }
 
-// This will attempt to convert straight-forward and conventional casing;
+// Replace will attempt to convert straight-forward and conventional casing;
 // it is not intended to replace complex or non-intuitive casing
 func (m macroCaseReplacer) Replace(input string) string {
 	result := input

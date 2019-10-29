@@ -1,8 +1,5 @@
 package factor3
 
-// Check here for moar examples on reflect usage:
-//	https://github.com/a8m/reflect-examples#get-and-set-struct-fields
-
 import (
 	"errors"
 	"os"
@@ -18,8 +15,6 @@ func isZeroValue(v reflect.Value) bool {
 }
 
 func getEnvValueForField(field reflect.StructField, key string) (string, error) {
-	// tagSet := newTagSet(tags)
-
 	value := os.Getenv(key)
 	isSet := len(value) > 0
 
@@ -29,11 +24,7 @@ func getEnvValueForField(field reflect.StructField, key string) (string, error) 
 	}
 
 	isRequiredValue := field.Tag.Get("envRequired")
-	isRequired, err := strconv.ParseBool(isRequiredValue)
-	if err != nil {
-		// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
-		isRequired = false
-	}
+	isRequired, _ := strconv.ParseBool(isRequiredValue)
 
 	if isRequired && !isSet {
 		return value, errors.New("No value set for required key: " + key)

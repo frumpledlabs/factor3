@@ -29,14 +29,9 @@ func (e Environment) WithVariablePrefix(environmentVariablePrefix string) Enviro
 // Into reads local environment into this "environment" instance
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
 func (e Environment) Into(input interface{}) error {
-
 	e.loadFields(input)
-	// setFields(input, e.fields)
 
-	return readEnvironmentInto(
-		e.variablePrefix,
-		input,
-	)
+	return setFields(e.fields)
 }
 
 // Debug reads the struct and logs the fields it finds with the sources for values it will use for each field.
@@ -56,7 +51,7 @@ func (e Environment) Debug(input interface{}) {
 	}
 }
 
-func (e Environment) loadFields(input interface{}) {
+func (e *Environment) loadFields(input interface{}) {
 	fields, err := loadFieldsFromEnvironmentFor(
 		e.variablePrefix,
 		input,

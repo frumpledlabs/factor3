@@ -14,10 +14,11 @@ import (
 
 type fieldInfo struct {
 	FieldValue          reflect.Value
-	Key                 string      `json:"key"`
-	EnvironmentVariable string      `json:"environment_variable"`
-	DefaultValue        string      `json:"default_value"`
-	CalculatedRawValue  interface{} `json:"calculated_raw_value"`
+	StructField         reflect.StructField
+	Key                 string `json:"key"`
+	EnvironmentVariable string `json:"environment_variable"`
+	DefaultValue        string `json:"default_value"`
+	CalculatedRawValue  string `json:"calculated_raw_value"`
 }
 
 func loadFieldsFromEnvironmentFor(
@@ -34,16 +35,16 @@ func loadFieldsFromEnvironmentFor(
 	}
 
 	for i := 0; i < inputType.NumField(); i++ {
-		field := inputValue.Field(i)
+		fieldValue := inputValue.Field(i)
 		fieldType := inputType.Field(i)
 		fieldName := inputType.Field(i).Name
 
-		switch field.Kind() {
+		switch fieldValue.Kind() {
 		case reflect.Struct:
-			structFields, err := debugReadStruct(
+			structFields, err := readStruct(
 				prefix,
 				"."+fieldName,
-				reflect.New(field.Type()).Interface(),
+				reflect.New(fieldValue.Type()).Interface(),
 			)
 			for _, field := range structFields {
 				fields[field.Key] = field
@@ -57,7 +58,7 @@ func loadFieldsFromEnvironmentFor(
 				prefix,
 				"",
 				fieldName,
-				field,
+				fieldValue,
 				fieldType,
 			)
 
@@ -72,12 +73,14 @@ func loadFieldsFromEnvironmentFor(
 	return fields, nil
 }
 
-func debugReadStruct(
+func readStruct(
 	envPrefix string,
 	keyPrefix string,
 	input interface{},
 ) (map[string]fieldInfo, error) {
 	fields := make(map[string]fieldInfo)
+
+	println("readFields:", keyPrefix)
 
 	inputValue := reflect.ValueOf(input).Elem()
 	inputType := inputValue.Type()
@@ -93,14 +96,14 @@ func debugReadStruct(
 		fieldName := inputType.Field(i).Name
 
 		switch fieldValue.Kind() {
-		case reflect.Struct:
+		case reflect.Struct, reflect.Ptr:
 			keyPrefix = fmt.Sprintf(
 				"%s.%s",
 				keyPrefix,
 				fieldName,
 			)
 
-			structFields, err := debugReadStruct(
+			structFields, err := readStruct(
 				envPrefix,
 				keyPrefix,
 				reflect.New(fieldValue.Type()).Interface(),
@@ -127,6 +130,14 @@ func debugReadStruct(
 
 			fields[fieldInfo.Key] = fieldInfo
 
+			err = setFieldValue(
+				fieldInfo.CalculatedRawValue,
+				fieldValue,
+			)
+
+			if err != nil {
+				return fields, err
+			}
 		}
 	}
 
@@ -138,13 +149,14 @@ func readField(
 	keyPrefix string,
 	name string,
 	fieldValue reflect.Value,
-	fieldType reflect.StructField,
+	field reflect.StructField,
 ) (fieldInfo, error) {
 	var err error
 
 	fieldInfo := fieldInfo{
-		FieldValue: fieldValue,
-		Key:        fmt.Sprintf("%s.%s", keyPrefix, name),
+		Key:         fmt.Sprintf("%s.%s", keyPrefix, name),
+		StructField: field,
+		FieldValue:  fieldValue,
 	}
 
 	err = validateFieldCanBeSet(fieldValue)
@@ -156,7 +168,7 @@ func readField(
 		fmt.Sprintf("%s_%s_%s", envPrefix, keyPrefix, name),
 	)
 
-	tagDefinition, _ := fieldType.Tag.Lookup(tagEnvName)
+	tagDefinition, _ := field.Tag.Lookup(tagEnvName)
 	fieldData := newFieldData(tagDefinition)
 
 	if fieldData.hasDefaultValue {
@@ -167,14 +179,19 @@ func readField(
 	fieldInfo.EnvironmentVariable = envVar
 	if fieldData.keyIsOverriden {
 		fieldInfo.EnvironmentVariable = fieldData.overrideKey
-		value, isSet := os.LookupEnv(fieldInfo.EnvironmentVariable)
-		if !isSet {
-			value = fieldInfo.DefaultValue
-		}
-		fieldInfo.CalculatedRawValue = value
+	}
+	value, isSet := os.LookupEnv(fieldInfo.EnvironmentVariable)
+	if !isSet {
+		value = fieldInfo.DefaultValue
+	}
+	fieldInfo.CalculatedRawValue = value
+
+	if fieldData.isRequired &&
+		fieldInfo.CalculatedRawValue == "" {
+		err = errors.New("Required field not set")
 	}
 
-	return fieldInfo, nil
+	return fieldInfo, err
 }
 
 func validateInput(fieldType reflect.Type, fieldValue reflect.Value) error {

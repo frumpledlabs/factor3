@@ -37,7 +37,7 @@ func Test_debug(t *testing.T) {
 		".PlainField": fieldInfo{
 			EnvironmentVariable: "PREFIX_PLAIN_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  nil,
+			CalculatedRawValue:  "",
 		},
 		".OverridenField": fieldInfo{
 			EnvironmentVariable: overrideSetKey,
@@ -47,7 +47,7 @@ func Test_debug(t *testing.T) {
 		".Embedded.Field": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  nil,
+			CalculatedRawValue:  "",
 		},
 		".Embedded.FieldWithDefault": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_FIELD_WITH_DEFAULT",
@@ -67,7 +67,7 @@ func Test_debug(t *testing.T) {
 		".Embedded.Deeply.NestedField": fieldInfo{
 			EnvironmentVariable: "PREFIX_EMBEDDED_DEEPLY_NESTED_FIELD",
 			DefaultValue:        "",
-			CalculatedRawValue:  nil,
+			CalculatedRawValue:  "",
 		},
 	}
 

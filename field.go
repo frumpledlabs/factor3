@@ -4,45 +4,33 @@ package factor3
 //	https://github.com/a8m/reflect-examples#get-and-set-struct-fields
 
 import (
-	"errors"
-	"os"
 	"reflect"
 	"strconv"
 )
 
-func isZeroValue(v reflect.Value) bool {
-	return reflect.DeepEqual(
-		reflect.Zero(v.Type()).Interface(),
-		v.Interface(),
-	)
+const tagEnvName = "env"
+
+var macroCaser = newMacroCaseReplacer()
+
+func setFields(
+	fields map[string]fieldInfo,
+) error {
+	for _, field := range fields {
+		println("Setting field:", field.Key, ":", field.CalculatedRawValue)
+
+		err := setFieldValue(
+			field.CalculatedRawValue,
+			field.FieldValue,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func getEnvValueForField(field reflect.StructField, key string) (string, error) {
-	// tagSet := newTagSet(tags)
-
-	value := os.Getenv(key)
-	isSet := len(value) > 0
-
-	if !isSet {
-		value = field.Tag.Get("envDefault")
-		isSet = len(value) > 0
-	}
-
-	isRequiredValue := field.Tag.Get("envRequired")
-	isRequired, err := strconv.ParseBool(isRequiredValue)
-	if err != nil {
-		// log.Warnf("Unrecognized tag '%s' for key: %s", isRequiredValue, key)
-		isRequired = false
-	}
-
-	if isRequired && !isSet {
-		return value, errors.New("No value set for required key: " + key)
-	}
-
-	return value, nil
-}
-
-func setField(rawValue string, v reflect.Value) error {
+func setFieldValue(rawValue string, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)
@@ -96,6 +84,14 @@ func setField(rawValue string, v reflect.Value) error {
 		v.Set(reflect.ValueOf(rawValue).Convert(v.Type()))
 	case reflect.Struct:
 		v.Set(reflect.New(v.Type()).Elem())
+
+		reference := reflect.New(v.Type())
+		value := reference.Elem()
+
+		value.Set(v)
+		// readEnvironmentInto(key, reference.Interface())
+		v.Set(value)
+
 	case reflect.Ptr:
 		v.Set(reflect.New(v.Type().Elem()))
 	}

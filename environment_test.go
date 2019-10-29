@@ -182,6 +182,7 @@ func Test_GivenInvalidInput_ThenErrorIsReturnedWhenLoadingVariables(t *testing.T
 
 		err := LoadEnvironment().
 			Into(tc.testStruct)
+
 		assert.NotNil(t, err)
 	}
 }

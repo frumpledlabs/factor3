@@ -15,8 +15,7 @@ func isZeroValue(v reflect.Value) bool {
 }
 
 func getEnvValueForField(field reflect.StructField, key string) (string, error) {
-	value := os.Getenv(key)
-	isSet := len(value) > 0
+	value, isSet := os.LookupEnv(key)
 
 	if !isSet {
 		value = field.Tag.Get("envDefault")
@@ -33,7 +32,7 @@ func getEnvValueForField(field reflect.StructField, key string) (string, error) 
 	return value, nil
 }
 
-func setField(rawValue string, v reflect.Value) error {
+func setFieldValue(rawValue string, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Bool:
 		value, err := strconv.ParseBool(rawValue)

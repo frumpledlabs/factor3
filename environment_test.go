@@ -197,7 +197,6 @@ func Test_EndToEnd(t *testing.T) {
 	}{}
 
 	LoadEnvironment().
-		Debug().
 		WithVariablePrefix("APP_EXAMPLE").
 		Into(&conf)
 }

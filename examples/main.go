@@ -10,6 +10,8 @@ import (
 
 func main() {
 	os.Setenv("APP_EXAMPLE_DEFINED_VAR", "PASSED")
+	os.Setenv("DEFINED_VAR", "PASSED")
+	os.Setenv("APP_EXAMPLE_REQUIRED_VAR", "SET")
 
 	conf := struct {
 		UndefinedVar string `env:"${UNDEFINED_VAR:-Default value used}"`
@@ -17,14 +19,14 @@ func main() {
 		RequiredVar  string `env:"required"`
 	}{}
 
-	os.Setenv("DEFINED_VAR", "PASSED")
-
-	factor3.
+	err := factor3.
 		LoadEnvironment().
-		Debug().
 		WithVariablePrefix("APP_EXAMPLE").
 		Into(&conf)
 
+	if err != nil {
+		panic("Unexpected error")
+	}
 	// Pretty print the conf variable:
 	jsonString, _ := json.Marshal(&conf)
 	fmt.Println(string(jsonString))

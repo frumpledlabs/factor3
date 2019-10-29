@@ -1,9 +1,5 @@
 package factor3
 
-import (
-	"github.com/frumpled/factor3/logger"
-)
-
 // Environment accumulates meta-data used to populate field data into an input from the environment
 type Environment struct {
 	variablePrefix string
@@ -27,15 +23,8 @@ func (e Environment) WithVariablePrefix(environmentVariablePrefix string) Enviro
 // Into reads local environment into this "environment" instance
 //  Traverses the passed in config object and populates it's fields w/ environment variable data
 func (e Environment) Into(configStruct interface{}) error {
-	return readEnvironmentInto(
+	return setFields(
 		e.variablePrefix,
 		configStruct,
 	)
-}
-
-// Debug currently is just a placeholder
-func (e Environment) Debug() Environment {
-	log.WithLevel(logger.DebugLevel)
-
-	return e
 }

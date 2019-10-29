@@ -221,3 +221,22 @@ func TestLoadFieldWithMultipleConfigLoads(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, conf.Field)
 }
+
+func TestDeeplyNestedFieldLoads(t *testing.T) {
+	expected := "PASSED"
+	envKey := "DEEPLY_NESTED_FIELD"
+	os.Setenv(envKey, expected)
+	defer os.Unsetenv(envKey)
+
+	conf := struct {
+		Deeply struct {
+			Nested struct {
+				Field string
+			}
+		}
+	}{}
+
+	err := LoadEnvironment().Into(&conf)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, conf.Deeply.Nested.Field)
+}
